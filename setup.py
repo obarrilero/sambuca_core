@@ -29,7 +29,7 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 setup(
-    name='sambuca_core',
+    name='sambuca-core',
     version='0.1.0',
     description='Core components for the SAMBUCA model',
     long_description=long_description,
