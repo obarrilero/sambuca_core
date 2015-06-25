@@ -1,6 +1,5 @@
-""" Definitions of some constants for Sambuca.
-"""
-
+# -*- coding: utf-8 -*-
+""" Definitions of some constants for Sambuca. """
 
 # Refractive index of fresh water at
 # temperature = 20C,

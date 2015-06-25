@@ -1,6 +1,5 @@
-"""Semi-analytical Lee/Sambuca forward model.
-"""
-
+# -*- coding: utf-8 -*-
+"""Semi-analytical Lee/Sambuca forward model. """
 
 from __future__ import (
     absolute_import,

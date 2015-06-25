@@ -1,6 +1,5 @@
-""" Sambuca exception definitions.
-"""
-
+# -*- coding: utf-8 -*-
+""" Sambuca exception definitions. """
 
 from __future__ import (
     absolute_import,

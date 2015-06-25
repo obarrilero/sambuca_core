@@ -5,7 +5,7 @@ from __future__ import (
     print_function,
     unicode_literals)
 
-import sambuca_core as sb
+import sambuca_core as sbc
 import numpy as np
 import spectral.io.envi as envi
 from scipy.io import loadmat, readsav
@@ -20,44 +20,44 @@ class TestSensorFilter(object):
         # sensor filter
         sensor_filter = envi.open(
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_filter_350_900nm.hdr'),
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_filter_350_900nm.lib')).spectra
 
         # input spectra
         input_spectra = envi.open(
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_input_spectra.hdr'),
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_input_spectra.lib')).spectra[0]
 
         # output spectra
         output_spectra = envi.open(
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_output_spectra.hdr'),
             resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 'tests/data/qbtest_output_spectra.lib')).spectra[0]
 
         return sensor_filter, input_spectra, output_spectra
 
     def __load_casi04_data(self, sensor_filter_file=None):
         filename = resource_filename(
-            sb.__name__,
+            sbc.__name__,
             './tests/data/sensor_filter_test_data.sav')
         data = readsav(filename)
 
         if sensor_filter_file:
             hdr = resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 './tests/data/{0}.hdr'.format(sensor_filter_file))
             lib = resource_filename(
-                sb.__name__,
+                sbc.__name__,
                 './tests/data/{0}.lib'.format(sensor_filter_file))
             filt = envi.open(hdr, lib)
             return filt.spectra, data.input_spectra, data.output_spectra[:,0]
@@ -70,7 +70,7 @@ class TestSensorFilter(object):
         """
 
         sensor_filter, input_spectra, expected_output = self.__load_qb_data()
-        actual_output = sb.apply_sensor_filter(input_spectra, sensor_filter)
+        actual_output = sbc.apply_sensor_filter(input_spectra, sensor_filter)
         assert np.allclose(
             actual_output,
             expected_output,
@@ -82,19 +82,20 @@ class TestSensorFilter(object):
         CASI04 sensor, using rrs spectra.
 
         This version of the test uses the sensor filter matrix as saved directly
-        from IDL memory, as opposed to loading the sensor filter directly from the
-        spectral library.
+        from IDL memory, as opposed to loading the sensor filter directly from
+        the spectral library.
 
-        The logic is that this test confirms that the sensor filter function gives
-        the same output given the same inputs (filter matrix, input spectra) as
-        the IDL code.
+        The logic is that this test confirms that the sensor filter function
+        gives the same output given the same inputs
+        (filter matrix, input spectra) as the IDL code.
         """
 
         sensor_filter, input_spectra, expected_output = self.__load_casi04_data()
-        actual_output = sb.apply_sensor_filter(input_spectra, sensor_filter)
+        actual_output = sbc.apply_sensor_filter(input_spectra, sensor_filter)
         assert expected_output.shape == actual_output.shape
         assert sensor_filter.shape[1] == len(input_spectra)
         assert sensor_filter.shape[0] == len(actual_output)
+        assert sensor_filter.shape == (28, 551)
         assert np.allclose(
             actual_output,
             expected_output,
@@ -127,7 +128,7 @@ class TestSensorFilter(object):
         # the filter slice here in this test.
         sensor_filter = sensor_filter[0:len(expected_output),]
 
-        actual_output = sb.apply_sensor_filter(input_spectra, sensor_filter)
+        actual_output = sbc.apply_sensor_filter(input_spectra, sensor_filter)
         assert sensor_filter.shape[1] == len(input_spectra)
         assert sensor_filter.shape[0] == len(actual_output)
         assert expected_output.shape == actual_output.shape
@@ -140,7 +141,7 @@ class TestSensorFilter(object):
     def test_synthetic_matlab_data(self):
         # load the test values generated from the Matlab code
         filename = resource_filename(
-            sb.__name__,
+            sbc.__name__,
             'tests/data/test_resample.mat')
         self.__data = loadmat(filename, squeeze_me=True)
 
@@ -155,8 +156,9 @@ class TestSensorFilter(object):
         assert sensor_filter.shape[1] == 551
 
         # resample
-        resampled_spectra = sb.apply_sensor_filter(src_spectra, sensor_filter)
+        resampled_spectra = sbc.apply_sensor_filter(src_spectra, sensor_filter)
 
         # test
         assert expected_spectra.shape == resampled_spectra.shape
         assert np.allclose(expected_spectra, resampled_spectra)
+

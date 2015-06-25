@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Ensure compatibility of Python 2 with Python 3 constructs
 from __future__ import (
     absolute_import,
@@ -9,7 +10,7 @@ from builtins import *
 from pkg_resources import resource_filename
 
 import numpy as np
-import sambuca_core as sb
+import sambuca_core as sbc
 from pytest import fail, skip
 from scipy.io import readsav
 
@@ -24,7 +25,7 @@ class TestForwardModel(object):
     def setup_class(cls):
         # load the test values
         filename = resource_filename(
-            sb.__name__,
+            sbc.__name__,
             './tests/data/forward_model_test_data.sav')
         cls.data = readsav(filename)
         cls.unpack_parameters()
@@ -114,7 +115,7 @@ class TestForwardModel(object):
         assert self.lambda0cdom == 440
 
     def run_forward_model(self):
-        return sb.forward_model(
+        return sbc.forward_model(
             self.chl,
             self.cdom,
             self.nap,
