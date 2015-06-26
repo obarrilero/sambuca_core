@@ -21,10 +21,10 @@ class TestSensorFilter(object):
         sensor_filter = envi.open(
             resource_filename(
                 sbc.__name__,
-                'tests/data/qbtest_filter_350_900nm.hdr'),
+                'tests/data/sensor_filters/qbtest_filter_350_900nm.hdr'),
             resource_filename(
                 sbc.__name__,
-                'tests/data/qbtest_filter_350_900nm.lib')).spectra
+                'tests/data/sensor_filters/qbtest_filter_350_900nm.lib')).spectra
 
         # input spectra
         input_spectra = envi.open(
@@ -55,10 +55,10 @@ class TestSensorFilter(object):
         if sensor_filter_file:
             hdr = resource_filename(
                 sbc.__name__,
-                './tests/data/{0}.hdr'.format(sensor_filter_file))
+                './tests/data/sensor_filters/{0}.hdr'.format(sensor_filter_file))
             lib = resource_filename(
                 sbc.__name__,
-                './tests/data/{0}.lib'.format(sensor_filter_file))
+                './tests/data/sensor_filters/{0}.lib'.format(sensor_filter_file))
             filt = envi.open(hdr, lib)
             return filt.spectra, data.input_spectra, data.output_spectra[:,0]
         else:

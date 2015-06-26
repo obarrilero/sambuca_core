@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 import xlrd
 
+from .utility import list_files
+
 
 def apply_sensor_filter(spectra, normalised_response_function):
     """Applies a sensor filter to a spectra using the given spectral
@@ -35,7 +37,6 @@ def apply_sensor_filter(spectra, normalised_response_function):
         normalised_response_function,
         spectra) / normalised_response_function.sum(1)
 
-
 def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
     """ Loads sensor filters from an Excel file. Both new style XLSX and
     old-style XLS formats are supported.
@@ -48,7 +49,7 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
             The default is to attempt to load all worksheets.
 
     Returns:
-        dictionary: A dictionary of numpy.ndarrays containing all sensor
+        dict: A dictionary of numpy.ndarrays containing all sensor
             filters, keyed by filter name inferred from the sheet name.
     """
 
@@ -72,5 +73,68 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
             except xlrd.biffh.XLRDError as xlrd_error:
                 pass
                 # TODO: log warning about invalid sheet
+
+    return sensor_filters
+
+def merge_dictionary(target, new_items):
+    """ Merges a dictionary of sensor new_filters into the master set,
+    warning when a duplicate name is detected. Keys from new_items that
+    are already present in target will generate warnings without modifying
+    target.
+
+    And yes, I know there are builtin methods to merge dictionaries (update),
+    but I wanted finer control over handling for existing keys.
+
+    Args:
+        target (dictionary): The destination dictionary.
+        new_items (dictionary): The dictionary of new items to merge.
+
+    Returns:
+        dictionary: target, with all unique items merged from new items.
+    """
+
+    for name, _filter in new_items.items():
+        if name in target:
+            # TODO: add logging
+            # logging.getLogger(__name__).warn('Sensor filter %s already defined', name)
+            pass
+        else:
+            target[name] = _filter
+
+    return target
+
+def load_sensor_filters(path):
+    """" Loads all valid sensor filters from the given location.
+
+    Args:
+        path (str): The directory path to scan for sensor filters.
+
+    Returns:
+        dictionary: The dictionary of sensor filter matricies, keyed by
+        filter name.
+    """
+    # TODO: add logging
+    # logging.getLogger(__name__).info(
+    #     'Loading Sensor filters from %s', path)
+
+    sensor_filters = {}
+    new_filters = {}
+
+    # excel files
+    for file in list_files(path, ['xls', 'xlsx']):
+        # logging.getLogger(__name__).info('\t %s', file)
+        try:
+            logging.getLogger(__name__).info('Loading %s', file)
+            new_filters = load_sensor_filters_excel(file)
+        except sbc.UnsupportedDataFormatError as ex:
+            # logging.getLogger(__name__).exception(ex)
+            # TODO: logging
+            pass
+
+    merge_dictionary(sensor_filters, new_filters)
+    new_filters.clear()
+
+    # TODO: CSV files
+    # TODO: Spectral Libraries
 
     return sensor_filters
