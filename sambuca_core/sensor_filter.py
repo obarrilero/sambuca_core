@@ -194,17 +194,30 @@ def _merge_dictionary(target, new_items):
 
     return target
 
-def load_sensor_filters(path):
+def load_sensor_filters(
+        path,
+        normalise=False,
+        spectral_library_name_parser=None):
     """" Loads all valid sensor filters from the given location.
 
     Args:
         path (str): The directory path to scan for sensor filters.
+        normalise (boolean): Determines whether the filter bands will be
+            normalised after loading.
+        spectral_library_name_parser (function): If supplied, this function
+            accepts a single string argument (the full path to a spectral
+            library file) and returns the sensor filter name that will be used
+            in the dictionary of results.
 
     Returns:
         dict: A dictionary of 2-tuples of numpy.ndarrays.
             The first element contains the band centre wavelengths of the input
             bands, while the second element contains the filter.
             Dictionary is keyed by filter name inferred from the sheet name.
+
+            Note that names are not disambiguated, so that if more than one
+            filter has the same name, only the first will be returned and no
+            error will be raised.
     """
     # TODO: add logging
     # logging.getLogger(__name__).info(
@@ -215,18 +228,34 @@ def load_sensor_filters(path):
 
     # excel files
     for file in list_files(path, ['xls', 'xlsx']):
-        # logging.getLogger(__name__).info('\t %s', file)
         try:
-            # logging.getLogger(__name__).info('Loading %s', file)
-            new_filters = load_sensor_filters_excel(file)
+            new_filters = load_sensor_filters_excel(file, normalise=normalise)
         except UnsupportedDataFormatError as ex:
             # logging.getLogger(__name__).exception(ex)
             # TODO: logging
             pass
+        _merge_dictionary(sensor_filters, new_filters)
 
-    _merge_dictionary(sensor_filters, new_filters)
-    new_filters.clear()
+    # Spectral Libraries
+    for file in list_files(path, ['lib']):
+        try:
+            base_name, _ = os.path.splitext(os.path.basename(file))
 
-    # TODO: Spectral Libraries
+            if spectral_library_name_parser:
+                name = spectral_library_name_parser(file)
+            else:
+                name = base_name
+
+            loaded_filter = load_sensor_filter_spectral_library(
+                path,
+                base_name,
+                normalise=normalise)
+
+            if name not in sensor_filters:
+                sensor_filters[name] = loaded_filter
+        except UnsupportedDataFormatError as ex:
+            # TODO: logging.getLogger(__name__).exception(ex)
+            pass
+        _merge_dictionary(sensor_filters, new_filters)
 
     return sensor_filters

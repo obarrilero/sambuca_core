@@ -6,6 +6,8 @@ from __future__ import (
     print_function,
     unicode_literals)
 
+from os.path import basename, splitext
+
 import numpy as np
 import pytest
 from pkg_resources import resource_filename
@@ -188,12 +190,21 @@ class TestSpectralLibraryLoading(object):
             sbc.load_sensor_filter_spectral_library(directory, base_name)
 
 
-@pytest.skip
 def test_load_all_filters():
     directory = resource_filename(
         sbc.__name__,
         'tests/data/sensor_filters')
 
-    all_filters = sbc.load_sensor_filters(directory)
+    # Nasty name parser based on the test filters having the pattern
+    # XXXX_350_900_1nm.lib where XXXX is the name
+    all_filters = sbc.load_sensor_filters(
+        directory,
+        normalise=False,
+        spectral_library_name_parser=lambda path:
+            splitext(basename(path))[0].split('_')[0])
 
-    assert len(all_filters) == 3
+    # I expect 6 filters:
+    # 3 valid filters in the xlsx
+    # 1 in the xls
+    # 2 spectral libraries (casi and quickbird)
+    assert len(all_filters) == 6
