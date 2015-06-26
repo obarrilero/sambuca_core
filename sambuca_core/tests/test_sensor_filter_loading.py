@@ -13,8 +13,15 @@ import sambuca_core as sbc
 
 
 class TestExcelSensorFilterLoading(object):
-
     """ Sensor filter loading tests. """
+
+    def test_xls_format(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xls')
+        loaded_filters = sbc.load_sensor_filters_excel(file)
+        assert len(loaded_filters) == 1
+
     def test_unknown_worksheet_doesnt_throw(self):
         file = resource_filename(
             sbc.__name__,
