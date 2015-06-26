@@ -50,8 +50,10 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
             The default is to attempt to load all worksheets.
 
     Returns:
-        dict: A dictionary of numpy.ndarrays containing all sensor
-            filters, keyed by filter name inferred from the sheet name.
+        dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths of the input
+            bands, while the second element contains the filter.
+            Dictionary is keyed by filter name inferred from the sheet name.
     """
 
     sensor_filters = {}
@@ -64,13 +66,14 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
             try:
                 filter_df = excel_file.parse(sheet)  # the sheet as a DataFrame
                 # OK, we have the data frame. Let's process it...
-
                 if normalise:
                     # normalise all bands relative to the strongest
                     # as this preserves the relative band strengths
                     filter_df = filter_df / max(filter_df.max())
 
-                sensor_filters[sheet] = filter_df.values.transpose()
+                sensor_filters[sheet] = (
+                    filter_df.index,
+                    filter_df.values.transpose())
             except xlrd.biffh.XLRDError as xlrd_error:
                 pass
                 # TODO: log warning about invalid sheet
@@ -111,8 +114,10 @@ def load_sensor_filters(path):
         path (str): The directory path to scan for sensor filters.
 
     Returns:
-        dictionary: The dictionary of sensor filter matricies, keyed by
-        filter name.
+        dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths of the input
+            bands, while the second element contains the filter.
+            Dictionary is keyed by filter name inferred from the sheet name.
     """
     # TODO: add logging
     # logging.getLogger(__name__).info(

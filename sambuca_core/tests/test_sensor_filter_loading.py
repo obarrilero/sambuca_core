@@ -38,10 +38,26 @@ class TestExcelSensorFilterLoading(object):
         assert isinstance(loaded_filters, dict)
         assert expected_name in loaded_filters
 
-        actual_filter = loaded_filters[expected_name]
+        actual_filter = loaded_filters[expected_name][1]
 
         assert isinstance(actual_filter, np.ndarray)
         assert actual_filter.shape == (3, 551)
         assert np.allclose(actual_filter[0, ], 1)
         assert np.allclose(actual_filter[1, ], 2)
         assert np.allclose(actual_filter[2, ], 3)
+
+    def test_wavelengths(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        name = '3_band_350_900'
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            sheet_names=[name])
+
+        expected_wavelengths = (range(350, 901, 1))
+        actual_wavelengths = loaded_filters[name][0]
+
+        assert len(expected_wavelengths) == 551
+        assert len(actual_wavelengths) == 551
+        assert np.allclose(expected_wavelengths, actual_wavelengths)
