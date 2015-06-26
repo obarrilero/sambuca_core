@@ -38,6 +38,7 @@ def apply_sensor_filter(spectra, normalised_response_function):
         normalised_response_function,
         spectra) / normalised_response_function.sum(1)
 
+# TODO: do I want an option to clip the filters to a specific range of 1nm bands?
 def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
     """ Loads sensor filters from an Excel file. Both new style XLSX and
     old-style XLS formats are supported.
@@ -66,6 +67,7 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
             try:
                 filter_df = excel_file.parse(sheet)  # the sheet as a DataFrame
                 # OK, we have the data frame. Let's process it...
+                # TODO: this will probably be common to all the load functions
                 if normalise:
                     # normalise all bands relative to the strongest
                     # as this preserves the relative band strengths

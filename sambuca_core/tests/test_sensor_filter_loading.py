@@ -18,17 +18,15 @@ class TestExcelSensorFilterLoading(object):
         file = resource_filename(
             sbc.__name__,
             'tests/data/sensor_filters/sensor_filters.xlsx')
-
         sbc.load_sensor_filters_excel(
             file,
             sheet_names=['non_existant'])
 
-    def test_valid_worksheet_load(self):
+    def test_load_single_worksheet(self):
         file = resource_filename(
             sbc.__name__,
             'tests/data/sensor_filters/sensor_filters.xlsx')
         expected_name = '3_band_350_900'
-
         loaded_filters = sbc.load_sensor_filters_excel(
             file,
             normalise=False,
@@ -38,6 +36,42 @@ class TestExcelSensorFilterLoading(object):
         assert isinstance(loaded_filters, dict)
         assert expected_name in loaded_filters
 
+    def test_load_multiple_worksheets(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        expected_names = ['3_band_350_900', '5_band_400_800', '4_band_300_1000']
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            normalise=False,
+            sheet_names=expected_names)
+
+        assert len(loaded_filters) == len(expected_names)
+
+    def test_normalise(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        expected_name = '3_band_350_900'
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            normalise=True,
+            sheet_names=[expected_name])
+        actual_filter = loaded_filters[expected_name][1]
+
+        assert np.allclose(actual_filter[0, ], 1.0/3.0)
+        assert np.allclose(actual_filter[1, ], 2.0/3.0)
+        assert np.allclose(actual_filter[2, ], 1.0)
+
+    def test_valid_worksheet_load(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        expected_name = '3_band_350_900'
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            normalise=False,
+            sheet_names=[expected_name])
         actual_filter = loaded_filters[expected_name][1]
 
         assert isinstance(actual_filter, np.ndarray)
@@ -50,14 +84,20 @@ class TestExcelSensorFilterLoading(object):
         file = resource_filename(
             sbc.__name__,
             'tests/data/sensor_filters/sensor_filters.xlsx')
-        name = '3_band_350_900'
+        expected_names = ['3_band_350_900', '5_band_400_800', '4_band_300_1000']
         loaded_filters = sbc.load_sensor_filters_excel(
             file,
-            sheet_names=[name])
+            normalise=False,
+            sheet_names=expected_names)
+        expected_wavelengths = {
+            expected_names[0]: (range(350, 901, 1)),
+            expected_names[1]: (range(400, 801, 1)),
+            expected_names[2]: (range(300, 1001, 1))}
 
-        expected_wavelengths = (range(350, 901, 1))
-        actual_wavelengths = loaded_filters[name][0]
+        assert len(loaded_filters) == len(expected_names)
 
-        assert len(expected_wavelengths) == 551
-        assert len(actual_wavelengths) == 551
-        assert np.allclose(expected_wavelengths, actual_wavelengths)
+        for name in expected_names:
+            expected = expected_wavelengths[name]
+            actual = loaded_filters[name][0]
+            assert len(expected) == len(actual)
+            assert np.allclose(expected, actual)
