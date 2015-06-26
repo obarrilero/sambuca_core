@@ -21,3 +21,8 @@ class SambucaException(Exception):
 class UnsupportedDataFormatError(SambucaException):
     """The file format is not supported by Sambuca."""
     pass
+
+
+class DataValidationError(SambucaException):
+    """The data file failed validation."""
+    pass

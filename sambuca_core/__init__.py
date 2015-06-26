@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """ Core components of the Sambuca modeling system """
 
-from .exceptions import SambucaException, UnsupportedDataFormatError
+from .exceptions import (
+    SambucaException,
+    UnsupportedDataFormatError,
+    DataValidationError
+)
 from .forward_model import forward_model, ForwardModelResults
 from .sensor_filter import (
     apply_sensor_filter,
     load_sensor_filters,
     load_sensor_filters_excel,
+    load_sensor_filter_spectral_library,
 )
 
 __author__ = 'Daniel Collins'

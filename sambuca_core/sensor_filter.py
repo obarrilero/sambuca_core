@@ -8,11 +8,15 @@ from __future__ import (
     unicode_literals)
 from builtins import *
 
+import os
+
 import numpy as np
 import pandas as pd
+import spectral.io.envi as envi
+import spectral.io.spyfile as spyfile
 import xlrd
 
-from .exceptions import UnsupportedDataFormatError
+from .exceptions import UnsupportedDataFormatError, DataValidationError
 from .utility import list_files, strictly_increasing
 
 
@@ -69,6 +73,55 @@ def _validate_filter_dataframe(filter_df):
 
     return True
 
+def _normalise_df(df):
+    # normalise all bands relative to the strongest
+    # as this preserves the relative band strengths
+    return df / max(df.max())
+    # TODO: If per-band normalisation is required, this line will do it. Not that this loses the relative band strengths
+    # return df / df.max()
+
+def load_sensor_filter_spectral_library(
+        directory,
+        base_filename,
+        normalise=False):
+    """ Loads a single sensor filter from an ENVI spectral library.
+
+    Args:
+        directory (str): Directory containing the sensor filter file.
+        base_filename (str): The filename without the extension or '.'
+            preceeding the extension.
+        normalise (bool): If true, the filter will be normalised.
+
+    Returns:
+        numpy.array: The band-centre wavelengths.
+        numpy.array: The sensor filter.
+    """
+
+    base_filename = os.path.join(directory, base_filename)
+    file_pattern = '{0}.{1}'
+
+    # load the spectral library
+    try:
+        sl = envi.open(
+            file_pattern.format(base_filename, 'hdr'),
+            file_pattern.format(base_filename, 'lib'))
+    except spyfile.FileNotFoundError as exception:
+        raise FileNotFoundError(exception)
+
+    # convert to a DataFrame
+    df = pd.DataFrame(sl.spectra.transpose(), index=sl.bands.centers)
+    df.columns = ['Band {0}'.format(x+1) for x in range(len(df.columns))]
+
+    if not _validate_filter_dataframe(df):
+        raise DataValidationError(
+            'Spectral library {0} failed validation'.format(
+                base_filename))
+
+    if normalise:
+        df = _normalise_df(df)
+
+    return np.array(df.index), df.values.transpose()
+
 # TODO: do I want an option to clip the filters to a specific range of 1nm bands?
 def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
     """ Loads sensor filters from an Excel file. Both new style XLSX and
@@ -96,23 +149,17 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
 
         for sheet in sheet_names:
             try:
-                filter_df = excel_file.parse(sheet)  # the sheet as a DataFrame
+                df = excel_file.parse(sheet)  # the sheet as a DataFrame
                 # OK, we have the data frame. Let's process it...
-                # TODO: this will probably be common to all the load functions
-
-                if not _validate_filter_dataframe(filter_df):
+                if not _validate_filter_dataframe(df):
                     continue
 
                 if normalise:
-                    # normalise all bands relative to the strongest
-                    # as this preserves the relative band strengths
-                    filter_df = filter_df / max(filter_df.max())
-                    # TODO: If per-band normalisation is required, this line will do it. Not that this loses the relative band strengths
-                    # filter_df = filter_df / filter_df.max()
+                    df = _normalise_df(df)
 
                 sensor_filters[sheet] = (
-                    filter_df.index,
-                    filter_df.values.transpose())
+                    np.array(df.index),
+                    df.values.transpose())
 
             except xlrd.biffh.XLRDError as xlrd_error:
                 continue
@@ -180,7 +227,6 @@ def load_sensor_filters(path):
     _merge_dictionary(sensor_filters, new_filters)
     new_filters.clear()
 
-    # TODO: CSV files
     # TODO: Spectral Libraries
 
     return sensor_filters

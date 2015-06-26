@@ -7,6 +7,7 @@ from __future__ import (
     unicode_literals)
 
 import numpy as np
+import pytest
 from pkg_resources import resource_filename
 
 import sambuca_core as sbc
@@ -155,3 +156,44 @@ class TestExcelSensorFilterLoading(object):
             actual = loaded_filters[name][0]
             assert len(expected) == len(actual)
             assert np.allclose(expected, actual)
+            assert isinstance(actual, np.ndarray)
+
+
+class TestSpectralLibraryLoading(object):
+
+    def test_valid_load_casi(self):
+        directory = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters')
+        base_name = 'CASI04_350_900_1nm'
+
+        wavelengths, sensor_filter = sbc.load_sensor_filter_spectral_library(
+            directory,
+            base_name,
+            normalise=False)
+
+        assert len(wavelengths) == 551
+        assert isinstance(wavelengths, np.ndarray)
+        assert isinstance(sensor_filter, np.ndarray)
+        assert sensor_filter.shape == (30, 551)
+        assert np.allclose(wavelengths, (range(350, 901, 1)))
+
+    def test_load_missing_file(self):
+        directory = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters')
+        base_name = 'missing_file'
+
+        with pytest.raises(FileNotFoundError):
+            sbc.load_sensor_filter_spectral_library(directory, base_name)
+
+
+@pytest.skip
+def test_load_all_filters():
+    directory = resource_filename(
+        sbc.__name__,
+        'tests/data/sensor_filters')
+
+    all_filters = sbc.load_sensor_filters(directory)
+
+    assert len(all_filters) == 3
