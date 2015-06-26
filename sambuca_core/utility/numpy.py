@@ -19,6 +19,8 @@ from builtins import *
 import numpy as np
 
 
+# In this instance, I think that x is a good name.
+# pylint: disable=invalid-name
 def strictly_increasing(x):
     """ Tests if a 1D vector is strictly increasing, where
     x[i+1] > x[i] for i in [0 .. len(x)].
@@ -44,3 +46,4 @@ def strictly_decreasing(x):
     """
     diffs = np.ediff1d(x)
     return np.all(diffs < 0)
+# pylint: enable=invalid-name
