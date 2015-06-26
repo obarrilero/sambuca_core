@@ -6,9 +6,10 @@ from __future__ import (
     print_function,
     unicode_literals)
 
-import sambuca_core as sbc
 import numpy as np
 from pkg_resources import resource_filename
+
+import sambuca_core as sbc
 
 
 class TestExcelSensorFilterLoading(object):
@@ -36,17 +37,27 @@ class TestExcelSensorFilterLoading(object):
         assert isinstance(loaded_filters, dict)
         assert expected_name in loaded_filters
 
-    def test_load_multiple_worksheets(self):
+    def test_load_all_worksheets(self):
         file = resource_filename(
             sbc.__name__,
             'tests/data/sensor_filters/sensor_filters.xlsx')
-        expected_names = ['3_band_350_900', '5_band_400_800', '4_band_300_1000']
+        loaded_filters = sbc.load_sensor_filters_excel(file)
+        assert len(loaded_filters) == 3
+
+    def test_load_multiple_skips_invalid_and_missing_sheets(self):
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        good_names = ['3_band_350_900', '5_band_400_800']
+        missing_names = ['Monty_Hall', 'Monty_Python']
+        invalid_names = ['Deliberately_Invalid', 'wavelengths_out_of_sequence']
+        names = good_names + missing_names + invalid_names
         loaded_filters = sbc.load_sensor_filters_excel(
             file,
             normalise=False,
-            sheet_names=expected_names)
+            sheet_names=names)
 
-        assert len(loaded_filters) == len(expected_names)
+        assert len(loaded_filters) == len(good_names)
 
     def test_normalise(self):
         file = resource_filename(

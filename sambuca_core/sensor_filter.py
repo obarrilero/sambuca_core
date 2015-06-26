@@ -13,7 +13,7 @@ import pandas as pd
 import xlrd
 
 from .exceptions import UnsupportedDataFormatError
-from .utility import list_files
+from .utility import list_files, strictly_increasing
 
 
 def apply_sensor_filter(spectra, normalised_response_function):
@@ -37,6 +37,37 @@ def apply_sensor_filter(spectra, normalised_response_function):
     return np.dot(
         normalised_response_function,
         spectra) / normalised_response_function.sum(1)
+
+def _validate_filter_dataframe(filter_df):
+    """ Internal function to validate a sensor filter data frame.
+
+    Args:
+        filter_df (pandas.DataFrame): the sensor filter
+
+    Returns:
+        bool: True if the filter is valid; otherwise false.
+    """
+
+    wavelengths = filter_df.index
+
+    # are the band-centre wavelengths strictly increasing?
+    if not strictly_increasing(wavelengths):
+        return False
+
+    # Are the wavelength spacings acceptable?
+    # For now, only sensor filters that are specified with exact
+    # 1nm bands are supported.
+    band_diffs = np.ediff1d(wavelengths)
+    if band_diffs.min() < 1.0 or band_diffs.max() > 1.0:
+        # TODO: log warning about interpolation/averaging not being supported
+        return False
+
+    # The dtype of every column needs to be a numpy-compatible number
+    if len(filter_df.select_dtypes(include=[np.number]).columns) \
+       != len(filter_df.columns):
+        return False
+
+    return True
 
 # TODO: do I want an option to clip the filters to a specific range of 1nm bands?
 def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
@@ -69,25 +100,18 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
                 # OK, we have the data frame. Let's process it...
                 # TODO: this will probably be common to all the load functions
 
-                # For now, only sensor filters that are specified with exact
-                # 1nm bands are supported.
-                # TODO: replace this with interpolation/averaging
-                wavelengths = filter_df.index
-                band_diffs = np.ediff1d(wavelengths)
-                if band_diffs.min() < 1.0 or band_diffs.max() > 1.0:
+                if not _validate_filter_dataframe(filter_df):
                     continue
-                    # TODO: log warning about interpolation/averaging not being supported
 
                 if normalise:
                     # normalise all bands relative to the strongest
                     # as this preserves the relative band strengths
                     filter_df = filter_df / max(filter_df.max())
-
                     # TODO: If per-band normalisation is required, this line will do it. Not that this loses the relative band strengths
                     # filter_df = filter_df / filter_df.max()
 
                 sensor_filters[sheet] = (
-                    wavelengths,
+                    filter_df.index,
                     filter_df.values.transpose())
 
             except xlrd.biffh.XLRDError as xlrd_error:
@@ -96,7 +120,7 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
 
     return sensor_filters
 
-def merge_dictionary(target, new_items):
+def _merge_dictionary(target, new_items):
     """ Merges a dictionary of sensor new_filters into the master set,
     warning when a duplicate name is detected. Keys from new_items that
     are already present in target will generate warnings without modifying
@@ -110,7 +134,7 @@ def merge_dictionary(target, new_items):
         new_items (dictionary): The dictionary of new items to merge.
 
     Returns:
-        dictionary: target, with all unique items merged from new items.
+        dict: target, with all unique items merged from new items.
     """
 
     for name, _filter in new_items.items():
@@ -153,7 +177,7 @@ def load_sensor_filters(path):
             # TODO: logging
             pass
 
-    merge_dictionary(sensor_filters, new_filters)
+    _merge_dictionary(sensor_filters, new_filters)
     new_filters.clear()
 
     # TODO: CSV files

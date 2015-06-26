@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Ensure compatibility of Python 2 with Python 3 constructs
 from __future__ import (
     absolute_import,
@@ -5,11 +6,12 @@ from __future__ import (
     print_function,
     unicode_literals)
 
-import sambuca_core as sbc
 import numpy as np
 import spectral.io.envi as envi
 from scipy.io import loadmat, readsav
 from pkg_resources import resource_filename
+
+import sambuca_core as sbc
 
 
 class TestSensorFilter(object):

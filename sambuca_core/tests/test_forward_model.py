@@ -10,9 +10,9 @@ from builtins import *
 from pkg_resources import resource_filename
 
 import numpy as np
-import sambuca_core as sbc
-from pytest import fail, skip
 from scipy.io import readsav
+
+import sambuca_core as sbc
 
 
 # @skip
