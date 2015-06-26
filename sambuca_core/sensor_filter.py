@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import xlrd
 
+from .exceptions import UnsupportedDataFormatError
 from .utility import list_files
 
 
@@ -124,9 +125,9 @@ def load_sensor_filters(path):
     for file in list_files(path, ['xls', 'xlsx']):
         # logging.getLogger(__name__).info('\t %s', file)
         try:
-            logging.getLogger(__name__).info('Loading %s', file)
+            # logging.getLogger(__name__).info('Loading %s', file)
             new_filters = load_sensor_filters_excel(file)
-        except sbc.UnsupportedDataFormatError as ex:
+        except UnsupportedDataFormatError as ex:
             # logging.getLogger(__name__).exception(ex)
             # TODO: logging
             pass

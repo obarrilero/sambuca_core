@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """ Core components of the Sambuca modeling system """
 
-# import .constants
 from .exceptions import SambucaException, UnsupportedDataFormatError
 from .forward_model import forward_model, ForwardModelResults
-from .sensor_filter import apply_sensor_filter, load_sensor_filters_excel
+from .sensor_filter import (
+    apply_sensor_filter,
+    load_sensor_filters,
+    load_sensor_filters_excel,
+)
 
 __author__ = 'Daniel Collins'
 __email__ = 'daniel.collins@csiro.au'
