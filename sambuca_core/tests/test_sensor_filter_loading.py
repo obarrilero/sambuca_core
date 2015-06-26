@@ -63,7 +63,7 @@ class TestExcelSensorFilterLoading(object):
         assert np.allclose(actual_filter[1, ], 2.0/3.0)
         assert np.allclose(actual_filter[2, ], 1.0)
 
-    def test_valid_worksheet_load(self):
+    def test_valid_worksheet(self):
         file = resource_filename(
             sbc.__name__,
             'tests/data/sensor_filters/sensor_filters.xlsx')
@@ -79,6 +79,42 @@ class TestExcelSensorFilterLoading(object):
         assert np.allclose(actual_filter[0, ], 1)
         assert np.allclose(actual_filter[1, ], 2)
         assert np.allclose(actual_filter[2, ], 3)
+
+    def test_undersampled_worksheet(self):
+        """ Current functionality is to skip any sensor filters that are not
+        already specified at exact 1nm bands.
+        When interpolation is implemented, this test will need to change to
+        reflect the new expectations.
+        """
+        # TODO: update test when band interpolation is implemented
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        expected_name = '10nm_3_bands_350_900'
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            normalise=False,
+            sheet_names=[expected_name])
+
+        assert len(loaded_filters) == 0
+
+    def test_oversampled_worksheet(self):
+        """ Current functionality is to skip any sensor filters that are not
+        already specified at exact 1nm bands.
+        When band-averaging is implemented, this test will need to change to
+        reflect the new expectations.
+        """
+        # TODO: update test when band averaging is implemented
+        file = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters/sensor_filters.xlsx')
+        expected_name = '0.1nm_3_bands_350_355'
+        loaded_filters = sbc.load_sensor_filters_excel(
+            file,
+            normalise=False,
+            sheet_names=[expected_name])
+
+        assert len(loaded_filters) == 0
 
     def test_wavelengths(self):
         file = resource_filename(

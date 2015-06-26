@@ -68,16 +68,30 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
                 filter_df = excel_file.parse(sheet)  # the sheet as a DataFrame
                 # OK, we have the data frame. Let's process it...
                 # TODO: this will probably be common to all the load functions
+
+                # For now, only sensor filters that are specified with exact
+                # 1nm bands are supported.
+                # TODO: replace this with interpolation/averaging
+                wavelengths = filter_df.index
+                band_diffs = np.ediff1d(wavelengths)
+                if band_diffs.min() < 1.0 or band_diffs.max() > 1.0:
+                    continue
+                    # TODO: log warning about interpolation/averaging not being supported
+
                 if normalise:
                     # normalise all bands relative to the strongest
                     # as this preserves the relative band strengths
                     filter_df = filter_df / max(filter_df.max())
 
+                    # TODO: If per-band normalisation is required, this line will do it. Not that this loses the relative band strengths
+                    # filter_df = filter_df / filter_df.max()
+
                 sensor_filters[sheet] = (
-                    filter_df.index,
+                    wavelengths,
                     filter_df.values.transpose())
+
             except xlrd.biffh.XLRDError as xlrd_error:
-                pass
+                continue
                 # TODO: log warning about invalid sheet
 
     return sensor_filters
