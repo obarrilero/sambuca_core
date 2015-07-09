@@ -217,7 +217,7 @@ def load_sensor_filters(
 
             Note that names are not disambiguated, so that if more than one
             filter has the same name, only the first will be returned and no
-            error will be raised.
+            error will be raised (although it will be logged).
     """
     # TODO: add logging
     # logging.getLogger(__name__).info(
@@ -256,6 +256,5 @@ def load_sensor_filters(
         except UnsupportedDataFormatError as ex:
             # TODO: logging.getLogger(__name__).exception(ex)
             pass
-        _merge_dictionary(sensor_filters, new_filters)
 
     return sensor_filters

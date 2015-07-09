@@ -190,21 +190,44 @@ class TestSpectralLibraryLoading(object):
             sbc.load_sensor_filter_spectral_library(directory, base_name)
 
 
-def test_load_all_filters():
-    directory = resource_filename(
-        sbc.__name__,
-        'tests/data/sensor_filters')
+class TestLoadAllFilters(object):
 
-    # Nasty name parser based on the test filters having the pattern
-    # XXXX_350_900_1nm.lib where XXXX is the name
-    all_filters = sbc.load_sensor_filters(
-        directory,
-        normalise=False,
-        spectral_library_name_parser=lambda path:
+    def test_invalid_directory(self):
+        directory = resource_filename(
+            sbc.__name__,
+            'tests/data/missing_stuff')
+        with pytest.raises(FileNotFoundError):
+            sbc.load_sensor_filters(directory)
+
+    def test_filter_names(self):
+        expected_names = [
+            'CASI04',  # Spectral Library
+            'qbtest',  # Spectral Library
+            '3_band_350_900',  # XLSX
+            '4_band_300_1000',  # XLSX
+            '5_band_400_800',  # XLSX
+            '4_band_300_1000_xls',  # XLS
+        ]
+        all_filters = self.load_all_filters()
+        for name in expected_names:
+            assert name in all_filters
+
+    def test_filter_counts(self):
+        all_filters = self.load_all_filters()
+        # I expect 6 filters:
+        # 3 valid filters in the xlsx
+        # 1 in the xls
+        # 2 spectral libraries (casi and quickbird)
+        assert len(all_filters) == 6
+
+    def load_all_filters(self):
+        directory = resource_filename(
+            sbc.__name__,
+            'tests/data/sensor_filters')
+        # Nasty name parser based on the test filters having the pattern
+        # XXXX_350_900_1nm.lib where XXXX is the name
+        return sbc.load_sensor_filters(
+            directory,
+            normalise=False,
+            spectral_library_name_parser=lambda path:
             splitext(basename(path))[0].split('_')[0])
-
-    # I expect 6 filters:
-    # 3 valid filters in the xlsx
-    # 1 in the xls
-    # 2 spectral libraries (casi and quickbird)
-    assert len(all_filters) == 6
