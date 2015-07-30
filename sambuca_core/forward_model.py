@@ -161,7 +161,7 @@ def forward_model(
     # elongation from bottom
     du_bottom = 1.04 * np.power(1.00 + (5.40 * u), 0.50)
 
-    # Remotely sensed reflectance for optically deep water
+    # Remotely sensed sub-surface reflectance for optically deep water
     rrsdp = (0.084 + 0.17 * u) * u
 
     # common terms in the following calculations
