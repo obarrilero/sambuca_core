@@ -76,9 +76,10 @@ def _validate_filter_dataframe(filter_df):
 def _normalise_df(df):
     # normalise all bands relative to the strongest
     # as this preserves the relative band strengths
-    return df / max(df.max())
-    # TODO: If per-band normalisation is required, this line will do it. Not that this loses the relative band strengths
-    # return df / df.max()
+    # return df / max(df.max())
+
+    # per-band normalisation
+    return df / df.max()
 
 def load_sensor_filter_spectral_library(
         directory,

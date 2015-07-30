@@ -80,8 +80,8 @@ class TestExcelSensorFilterLoading(object):
             sheet_names=[expected_name])
         actual_filter = loaded_filters[expected_name][1]
 
-        assert np.allclose(actual_filter[0, ], 1.0/3.0)
-        assert np.allclose(actual_filter[1, ], 2.0/3.0)
+        assert np.allclose(actual_filter[0, ], 1.0)
+        assert np.allclose(actual_filter[1, ], 1.0)
         assert np.allclose(actual_filter[2, ], 1.0)
 
     def test_valid_worksheet(self):
