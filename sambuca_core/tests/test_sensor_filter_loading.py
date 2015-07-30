@@ -80,9 +80,9 @@ class TestExcelSensorFilterLoading(object):
             sheet_names=[expected_name])
         actual_filter = loaded_filters[expected_name][1]
 
-        assert np.allclose(actual_filter[0, ], 1.0)
-        assert np.allclose(actual_filter[1, ], 1.0)
-        assert np.allclose(actual_filter[2, ], 1.0)
+        assert np.allclose(actual_filter[0, ].max(), 1.0)
+        assert np.allclose(actual_filter[1, ].max(), 1.0)
+        assert np.allclose(actual_filter[2, ].max(), 1.0)
 
     def test_valid_worksheet(self):
         file = resource_filename(
@@ -97,9 +97,12 @@ class TestExcelSensorFilterLoading(object):
 
         assert isinstance(actual_filter, np.ndarray)
         assert actual_filter.shape == (3, 551)
-        assert np.allclose(actual_filter[0, ], 1)
-        assert np.allclose(actual_filter[1, ], 2)
-        assert np.allclose(actual_filter[2, ], 3)
+        assert np.allclose(actual_filter[0, ].min(), 0.43)
+        assert np.allclose(actual_filter[0, ].max(), 4.3)
+        assert np.allclose(actual_filter[1, ].min(), 0.1)
+        assert np.allclose(actual_filter[1, ].max(), 2.39)
+        assert np.allclose(actual_filter[2, ].min(), 0.9)
+        assert np.allclose(actual_filter[2, ].max(), 11.0)
 
     def test_undersampled_worksheet(self):
         """ Current functionality is to skip any sensor filters that are not
