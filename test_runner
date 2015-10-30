@@ -1,25 +1,22 @@
 #!/bin/bash
 
-echo Running tests for $1 loops
 i=0
-while [ $i -lt $1 ]; do
+while [ 1 ]; do
     let i=i+1
     clear
 
-    echo Loop $i of $1:
+    echo Loop $i ...
     echo
 
-    if [ "$2" == "slow" ]; then
+    if [ "$1" == "slow" ]; then
         make test-slow
-    elif [ ! "$2" == "" ]; then
-        $2
+    elif [ ! "$1" == "" ]; then
+        $1
     else
         make test
     fi
 
-    if [ $i -lt $1 ]; then
-        echo
-        read -n1 -s -p "Press any key to repeat tests (ctrl-c to quit) ..."
-        echo
-    fi
+    echo
+    read -n1 -s -p "Press any key to repeat (ctrl-c to quit) ..."
+    echo
 done
