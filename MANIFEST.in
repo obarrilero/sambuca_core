@@ -1,9 +1,8 @@
-graft docs
 graft examples
-graft sambuca_core
+
+prune docs
 
 include pylintrc
-
 include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
