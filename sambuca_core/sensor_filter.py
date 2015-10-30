@@ -42,17 +42,17 @@ def apply_sensor_filter(spectra, normalised_response_function):
         normalised_response_function,
         spectra) / normalised_response_function.sum(1)
 
-def _validate_filter_dataframe(filter_df):
+def _validate_filter_dataframe(filter_dataframe):
     """ Internal function to validate a sensor filter data frame.
 
     Args:
-        filter_df (pandas.DataFrame): the sensor filter
+        filter_dataframe (pandas.DataFrame): the sensor filter
 
     Returns:
         bool: True if the filter is valid; otherwise false.
     """
 
-    wavelengths = filter_df.index
+    wavelengths = filter_dataframe.index
 
     # are the band-centre wavelengths strictly increasing?
     if not strictly_increasing(wavelengths):
@@ -67,19 +67,28 @@ def _validate_filter_dataframe(filter_df):
         return False
 
     # The dtype of every column needs to be a numpy-compatible number
-    if len(filter_df.select_dtypes(include=[np.number]).columns) \
-       != len(filter_df.columns):
+    if len(filter_dataframe.select_dtypes(include=[np.number]).columns) \
+       != len(filter_dataframe.columns):
         return False
 
     return True
 
-def _normalise_df(df):
+def _normalise_dataframe(dataframe):
+    """ Normalises the spectral bands in a dataframe.
+
+    Args:
+        dataframe (pandas.DataFrame): the spectral data.
+
+    Returns:
+        pandas.DataFrame: The normalised spectral data.
+    """
+
     # normalise all bands relative to the strongest
     # as this preserves the relative band strengths
-    # return df / max(df.max())
+    # return dataframe / max(dataframe.max())
 
     # per-band normalisation
-    return df / df.max()
+    return dataframe / dataframe.max()
 
 def load_sensor_filter_spectral_library(
         directory,
@@ -103,27 +112,30 @@ def load_sensor_filter_spectral_library(
 
     # load the spectral library
     try:
-        sl = envi.open(
+        spectral_library = envi.open(
             file_pattern.format(base_filename, 'hdr'),
             file_pattern.format(base_filename, 'lib'))
     except spyfile.FileNotFoundError as exception:
         raise FileNotFoundError(exception)
 
     # convert to a DataFrame
-    df = pd.DataFrame(sl.spectra.transpose(), index=sl.bands.centers)
-    df.columns = ['Band {0}'.format(x+1) for x in range(len(df.columns))]
+    dataframe = pd.DataFrame(
+        spectral_library.spectra.transpose(),
+        index=spectral_library.bands.centers)
+    dataframe.columns = ['Band {0}'.format(x+1)
+                         for x in range(len(dataframe.columns))]
 
-    if not _validate_filter_dataframe(df):
+    if not _validate_filter_dataframe(dataframe):
         raise DataValidationError(
             'Spectral library {0} failed validation'.format(
                 base_filename))
 
     if normalise:
-        df = _normalise_df(df)
+        dataframe = _normalise_dataframe(dataframe)
 
-    return np.array(df.index), df.values.transpose()
+    return np.array(dataframe.index), dataframe.values.transpose()
 
-# TODO: do I want an option to clip the filters to a specific range of 1nm bands?
+# TODO: option to clip the filters to a specific range of 1nm bands?
 def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
     """ Loads sensor filters from an Excel file. Both new style XLSX and
     old-style XLS formats are supported.
@@ -150,20 +162,21 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
 
         for sheet in sheet_names:
             try:
-                df = excel_file.parse(sheet)  # the sheet as a DataFrame
+                dataframe = excel_file.parse(sheet)  # the sheet as a DataFrame
                 # OK, we have the data frame. Let's process it...
-                if not _validate_filter_dataframe(df):
+                if not _validate_filter_dataframe(dataframe):
                     continue
 
                 if normalise:
-                    df = _normalise_df(df)
+                    dataframe = _normalise_dataframe(dataframe)
 
                 sensor_filters[sheet] = (
-                    np.array(df.index),
-                    df.values.transpose())
+                    np.array(dataframe.index),
+                    dataframe.values.transpose())
 
-            except xlrd.biffh.XLRDError as xlrd_error:
+            except xlrd.biffh.XLRDError:
                 continue
+            # except xlrd.biffh.XLRDError as xlrd_error:
                 # TODO: log warning about invalid sheet
 
     return sensor_filters
@@ -188,7 +201,8 @@ def _merge_dictionary(target, new_items):
     for name, _filter in new_items.items():
         if name in target:
             # TODO: add logging
-            # logging.getLogger(__name__).warn('Sensor filter %s already defined', name)
+            # logging.getLogger(__name__).warn(
+            # 'Sensor filter %s already defined', name)
             pass
         else:
             target[name] = _filter
@@ -231,10 +245,11 @@ def load_sensor_filters(
     for file in list_files(path, ['xls', 'xlsx']):
         try:
             new_filters = load_sensor_filters_excel(file, normalise=normalise)
-        except UnsupportedDataFormatError as ex:
+        except UnsupportedDataFormatError:
+            pass
+        # except UnsupportedDataFormatError as ex:
             # logging.getLogger(__name__).exception(ex)
             # TODO: logging
-            pass
         _merge_dictionary(sensor_filters, new_filters)
 
     # Spectral Libraries
@@ -254,8 +269,9 @@ def load_sensor_filters(
 
             if name not in sensor_filters:
                 sensor_filters[name] = loaded_filter
-        except UnsupportedDataFormatError as ex:
-            # TODO: logging.getLogger(__name__).exception(ex)
+        except UnsupportedDataFormatError:
             pass
+        # except UnsupportedDataFormatError as ex:
+            # TODO: logging.getLogger(__name__).exception(ex)
 
     return sensor_filters
