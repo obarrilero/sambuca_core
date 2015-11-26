@@ -25,7 +25,7 @@ class TestSpectralLibrarySubstrateLoading(object):
             'tests/data/substrates')
         base_name = 'HI_3'
 
-        loaded_substrates = sbc.load_substrate_spectral_library(
+        loaded_substrates = sbc.load_envi_spectral_library(
             directory,
             base_name)
 
@@ -50,4 +50,4 @@ class TestSpectralLibrarySubstrateLoading(object):
         base_name = 'missing_file'
 
         with pytest.raises(FileNotFoundError):
-            sbc.load_substrate_spectral_library(directory, base_name)
+            sbc.load_envi_spectral_library(directory, base_name)

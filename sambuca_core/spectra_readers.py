@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-""" Contains functions for loading Substrate spectra. """
+""" Contains functions for loading collections of spectra from Sambuca
+spectral database directories. """
 
 from __future__ import (
     absolute_import,
@@ -36,7 +37,7 @@ def _validate_spectra_dataframe(spectra_dataframe):
         return False
 
     # Are the wavelength spacings acceptable?
-    # For now, only sensor filters that are specified with exact
+    # For now, only spectra that are specified with exact
     # 1nm bands are supported.
     band_diffs = np.ediff1d(wavelengths)
     if band_diffs.min() < 1.0 or band_diffs.max() > 1.0:
@@ -51,22 +52,23 @@ def _validate_spectra_dataframe(spectra_dataframe):
     return True
 
 
-def load_substrate_spectral_library(
+def load_envi_spectral_library(
         directory,
         base_filename):
-    """ Loads substrates from an ENVI spectral library.
+    """ Loads spectra from an ENVI spectral library.
 
     Args:
-        directory (str): Directory containing the substrate file.
+        directory (str): Directory containing the spectral library file.
         base_filename (str): The filename without the extension or '.'
             preceeding the extension.
 
     Returns:
         dict: A dictionary of 2-tuples of numpy.ndarrays.
-            The first element contains the band centre wavelengths.
-            bands, while the second element contains the spectra.
-            Dictionary is keyed by spectra name, formed by concatenation
-            of the file and band names.
+            The first element contains the band centre wavelengths,
+            while the second element contains the spectra.
+            The dictionary is keyed by spectra name, formed by concatenation
+            of the file and band names. This allows multiple spectra from multiple
+            files to be unambigiously collected into a dictionary.
     """
 
     full_filename = os.path.join(directory, base_filename)
@@ -80,7 +82,7 @@ def load_substrate_spectral_library(
     except spyfile.FileNotFoundError as exception:
         raise FileNotFoundError(exception)
 
-    # convert to a DataFrame
+    # convert to a DataFrame for processing
     dataframe = pd.DataFrame(
         spectral_library.spectra.transpose(),
         index=spectral_library.bands.centers)
