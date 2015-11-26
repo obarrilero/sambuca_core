@@ -13,7 +13,7 @@ from .sensor_filter import (
     load_sensor_filters_excel,
     load_sensor_filter_spectral_library,
 )
-from .spectra_readers import load_envi_spectral_library
+from .spectra_readers import load_envi_spectral_library, load_all_spectra
 
 __author__ = 'Daniel Collins'
 __email__ = 'daniel.collins@csiro.au'

@@ -17,7 +17,7 @@ import spectral.io.spyfile as spyfile
 import xlrd
 
 from .exceptions import UnsupportedDataFormatError, DataValidationError
-from .utility import list_files, strictly_increasing
+from .utility import list_files, strictly_increasing, merge_dictionary
 
 
 def apply_sensor_filter(spectra, normalised_response_function):
@@ -181,33 +181,6 @@ def load_sensor_filters_excel(filename, normalise=False, sheet_names=None):
 
     return sensor_filters
 
-def _merge_dictionary(target, new_items):
-    """ Merges a dictionary of sensor new_filters into the master set,
-    warning when a duplicate name is detected. Keys from new_items that
-    are already present in target will generate warnings without modifying
-    target.
-
-    And yes, I know there are builtin methods to merge dictionaries (update),
-    but I wanted finer control over handling for existing keys.
-
-    Args:
-        target (dictionary): The destination dictionary.
-        new_items (dictionary): The dictionary of new items to merge.
-
-    Returns:
-        dict: target, with all unique items merged from new items.
-    """
-
-    for name, _filter in new_items.items():
-        if name in target:
-            # TODO: add logging
-            # logging.getLogger(__name__).warn(
-            # 'Sensor filter %s already defined', name)
-            pass
-        else:
-            target[name] = _filter
-
-    return target
 
 def load_sensor_filters(
         path,
@@ -250,7 +223,7 @@ def load_sensor_filters(
         # except UnsupportedDataFormatError as ex:
             # logging.getLogger(__name__).exception(ex)
             # TODO: logging
-        _merge_dictionary(sensor_filters, new_filters)
+        merge_dictionary(sensor_filters, new_filters)
 
     # Spectral Libraries
     for file in list_files(path, ['lib']):

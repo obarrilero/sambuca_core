@@ -18,7 +18,7 @@ import spectral.io.spyfile as spyfile
 import xlrd
 
 from .exceptions import UnsupportedDataFormatError, DataValidationError
-from .utility import list_files, strictly_increasing
+from .utility import list_files, strictly_increasing, merge_dictionary
 
 def _validate_spectra_dataframe(spectra_dataframe):
     """ Internal function to validate a spectra data frame.
@@ -99,5 +99,54 @@ def load_envi_spectral_library(
         all_spectra['{0}:{1}'.format(base_filename, column)] = (
             np.array(dataframe.index),
             dataframe[column].values)
+
+    return all_spectra
+
+
+def load_all_spectra(path):
+    """" Loads all valid spectra from the given location.
+
+    Args:
+        path (str): The directory path to scan for supported spectra files.
+
+    Returns:
+        dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths of the input
+            bands, while the second element contains the spectra values.
+            Dictionary is keyed by spectra name built from the file and
+            band/sheet names, separated by a colon.
+
+            Note that names are not disambiguated, so that if more than one
+            filter has the same name, only the first will be returned and no
+            error will be raised (although it will be logged).
+    """
+    # TODO: add logging
+    # logging.getLogger(__name__).info(
+    #     'Loading Sensor filters from %s', path)
+
+    all_spectra = {}
+    new_spectra = {}
+
+    # excel files
+    # for file in list_files(path, ['xls', 'xlsx']):
+    #     try:
+    #         new_spectra = load_spectra_excel(file)
+    #     except UnsupportedDataFormatError:
+    #         pass
+    #         # except UnsupportedDataFormatError as ex:
+    #         # logging.getLogger(__name__).exception(ex)
+    #         # TODO: logging
+    #     _merge_dictionary(all_spectra, new_spectra)
+
+    # Spectral Libraries
+    for file in list_files(path, ['lib']):
+        try:
+            base_name, _ = os.path.splitext(os.path.basename(file))
+            new_spectra = load_envi_spectral_library(path, base_name)
+        except UnsupportedDataFormatError:
+            pass
+            # except UnsupportedDataFormatError as ex:
+            # TODO: logging.getLogger(__name__).exception(ex)
+        merge_dictionary(all_spectra, new_spectra)
 
     return all_spectra
