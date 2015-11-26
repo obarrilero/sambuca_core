@@ -14,8 +14,10 @@ from pkg_resources import resource_filename
 
 import sambuca_core as sbc
 
+
 def spectra_name(base_name, band_name):
     return '{0}:{1}'.format(base_name, band_name)
+
 
 class TestSubstrateLoading(object):
 
@@ -49,13 +51,15 @@ class TestSubstrateLoading(object):
             sbc.__name__,
             'tests/data/substrates')
 
-        loaded_substrates = sbc.load_all_spectra(directory)
+        loaded_substrates = sbc.load_all_spectral_libraries(directory)
         assert isinstance(loaded_substrates, dict)
 
-        # we expect 3 spectra in the HI_3 file, 10 in the Moreton_Bay_speclib_final file
-        assert len(loaded_substrates) == 13
+        # we expect 3 spectra in the HI_3 file, 10 in the
+        # Moreton_Bay_speclib_final file, and another 11 in the xlsx file
+        assert len(loaded_substrates) == 24
 
-        # HI_3 is tested above, lets check some values from the Moreton Bay data ...
+        # HI_3 is tested above, lets check some values from the
+        # Moreton Bay data ...
         mb_names = ['Zostera muelleri',
                     'Halophila ovalis',
                     'Halophila spinulosa',
@@ -87,3 +91,36 @@ class TestSubstrateLoading(object):
 
         with pytest.raises(FileNotFoundError):
             sbc.load_envi_spectral_library(directory, base_name)
+
+    def test_load_excel(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/substrates/Moreton_Bay_speclib.xlsx')
+
+        loaded_substrates = sbc.load_excel_spectral_library(filename)
+        assert isinstance(loaded_substrates, dict)
+        assert len(loaded_substrates) == 11
+
+        mb_names = ['weird_substrate',  # loaded from second worksheet
+                    'Zostera muelleri',
+                    'Halophila ovalis',
+                    'Halophila spinulosa',
+                    'Syringodium isoetifolium',
+                    'Cymodocea serrulata',
+                    'green algae',
+                    'brown algae',
+                    'brown Mud',
+                    'light brown Mud',
+                    'white Sand']
+
+        expected_names = [spectra_name('Moreton_Bay_speclib', x) for x in mb_names]
+        for expected_name in expected_names:
+            assert expected_name in loaded_substrates
+
+        wavelengths, white_sand = loaded_substrates['Moreton_Bay_speclib:white Sand']
+
+        assert len(wavelengths) == 600
+        assert len(white_sand) == 600
+        assert isinstance(wavelengths, np.ndarray)
+        assert isinstance(white_sand, np.ndarray)
+        assert np.allclose(wavelengths, (range(350, 950, 1)))

@@ -52,6 +52,64 @@ def _validate_spectra_dataframe(spectra_dataframe):
     return True
 
 
+def _add_dataframe_spectra_to_dictionary(dataframe, base_name, dictionary=None):
+    """ Adds all spectra from a dataframe to a dictionary, building the spectra
+    name as 'base_name:column_name'
+    """
+    dictionary = {} if not dictionary else dictionary
+    for column in dataframe:
+        dictionary['{0}:{1}'.format(base_name, column)] = (
+            np.array(dataframe.index),
+            dataframe[column].values)
+    return dictionary
+
+
+def load_excel_spectral_library(filename, sheet_names=None):
+    """ Loads a spectral library from an Excel file. Both new style XLSX and
+    old-style XLS formats are supported.
+
+    Args:
+        filename (str): full path to the Excel file.
+        sheet_names (list): Optional list of worksheet names to load.
+            The default is to attempt to load all worksheets.
+
+    Returns:
+       dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths,
+            while the second element contains the spectra.
+            The dictionary is keyed by spectra name, formed by concatenation
+            of the file and band names. This allows multiple spectra from multiple
+            files to be unambigiously collected into a dictionary.
+    """
+    all_spectra = {}
+    with pd.ExcelFile(filename) as excel_file:
+        base_name, _ = os.path.splitext(os.path.basename(filename))
+        # default is all sheets
+        if not sheet_names:
+            sheet_names = excel_file.sheet_names
+
+        for sheet in sheet_names:
+            try:
+                dataframe = excel_file.parse(sheet)  # the sheet as a DataFrame
+                # OK, we have the data frame. Let's process it...
+                if not _validate_spectra_dataframe(dataframe):
+                    continue
+
+                # if normalise:
+                #     dataframe = _normalise_dataframe(dataframe)
+
+                all_spectra = _add_dataframe_spectra_to_dictionary(
+                    dataframe,
+                    base_name,
+                    all_spectra)
+            except xlrd.biffh.XLRDError:
+                continue
+            # except xlrd.biffh.XLRDError as xlrd_error:
+                # TODO: log warning about invalid sheet
+
+    return all_spectra
+
+
 def load_envi_spectral_library(
         directory,
         base_filename):
@@ -94,16 +152,10 @@ def load_envi_spectral_library(
                 base_filename))
 
     # merge the spectra into a dictionary
-    all_spectra = {}
-    for column in dataframe:
-        all_spectra['{0}:{1}'.format(base_filename, column)] = (
-            np.array(dataframe.index),
-            dataframe[column].values)
-
-    return all_spectra
+    return _add_dataframe_spectra_to_dictionary(dataframe, base_filename)
 
 
-def load_all_spectra(path):
+def load_all_spectral_libraries(path):
     """" Loads all valid spectra from the given location.
 
     Args:
@@ -128,15 +180,15 @@ def load_all_spectra(path):
     new_spectra = {}
 
     # excel files
-    # for file in list_files(path, ['xls', 'xlsx']):
-    #     try:
-    #         new_spectra = load_spectra_excel(file)
-    #     except UnsupportedDataFormatError:
-    #         pass
-    #         # except UnsupportedDataFormatError as ex:
-    #         # logging.getLogger(__name__).exception(ex)
-    #         # TODO: logging
-    #     _merge_dictionary(all_spectra, new_spectra)
+    for file in list_files(path, ['xls', 'xlsx']):
+        try:
+            new_spectra = load_excel_spectral_library(file)
+        except UnsupportedDataFormatError:
+            pass
+            # except UnsupportedDataFormatError as ex:
+            # logging.getLogger(__name__).exception(ex)
+            # TODO: logging
+        merge_dictionary(all_spectra, new_spectra)
 
     # Spectral Libraries
     for file in list_files(path, ['lib']):
