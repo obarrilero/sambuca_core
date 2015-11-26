@@ -29,7 +29,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 project = u'Sambuca'
 copyright = u'2014-15, CSIRO'
-version = release = '0.1.0'
+version = release = '0.1.1'
 pygments_style = 'perldoc'
 templates_path = ['.']
 html_use_smartypants = True
