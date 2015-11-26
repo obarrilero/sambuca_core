@@ -164,7 +164,7 @@ class TestExcelSensorFilterLoading(object):
             assert isinstance(actual, np.ndarray)
 
 
-class TestSpectralLibraryLoading(object):
+class TestSpectralLibrarySensorFilterLoading(object):
 
     def test_valid_load_casi(self):
         directory = resource_filename(
@@ -193,7 +193,7 @@ class TestSpectralLibraryLoading(object):
             sbc.load_sensor_filter_spectral_library(directory, base_name)
 
 
-class TestLoadAllFilters(object):
+class TestLoadAllSensorFilters(object):
 
     def test_invalid_directory(self):
         directory = resource_filename(
