@@ -50,13 +50,13 @@ def forward_model(
         cdom,
         nap,
         depth,
-        substrate_fraction,
         substrate1,
-        substrate2,
         wavelengths,
         awater,
         aphy_star,
         num_bands,
+        substrate_fraction=1,
+        substrate2=None,
         slope_cdom=0.0168052,
         slope_nap=0.00977262,
         slope_backscatter=0.878138,
@@ -83,15 +83,15 @@ def forward_model(
         nap (float): Concentration of non-algal particles,
             (also known as Tripton/tr in some literature).
         depth (float): Water column depth.
-        substrate_fraction (float): Substrate proportion, used to generate a
-            convex combination of substrate1 and substrate2.
         substrate1 (array-like): A benthic substrate.
-        substrate2 (array-like): A benthic substrate.
         wavelengths (array-like): Central wavelengths of the modelled
             spectral bands.
         awater (array-like): Absorption coefficient of pure water
         aphy_star (array-like): Specific absorption of phytoplankton.
         num_bands (int): The number of spectral bands.
+        substrate_fraction (float): Substrate proportion, used to generate a
+            convex combination of substrate1 and substrate2.
+        substrate2 (array-like, optional): A benthic substrate.
         slope_cdom (float, optional): slope of cdom absorption
         slope_nap (float, optional): slope of NAP absorption
         slope_backscatter (float, optional): TODO
@@ -114,7 +114,8 @@ def forward_model(
     """
 
     assert len(substrate1) == num_bands
-    assert len(substrate2) == num_bands
+    if substrate2 is not None:
+        assert len(substrate2) == num_bands
     assert len(wavelengths) == num_bands
     assert len(awater) == num_bands
     assert len(aphy_star) == num_bands
@@ -147,7 +148,9 @@ def forward_model(
     bb = bbwater + chl * bbph_star + nap * bbtr_star
 
     # Calculate total bottom reflectance from the two substrates
-    r_substratum = substrate_fraction * substrate1 + \
+    r_substratum = substrate1
+    if substrate2 is not None:
+        r_substratum = substrate_fraction * substrate1 + \
         (1. - substrate_fraction) * substrate2
 
     # TODO: what are u and kappa?

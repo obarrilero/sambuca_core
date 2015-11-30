@@ -120,13 +120,13 @@ class TestForwardModel(object):
             self.cdom,
             self.nap,
             self.H,
-            self.q1,
             self.substrate1,
-            self.substrate2,
             self.wav,
             self.awater,
             self.aphy_star,
             551,
+            substrate_fraction=self.q1,
+            substrate2=self.substrate2,
             x_ph_lambda0x=self.x_ph_lambda0x,
             x_nap_lambda0x=self.x_nap_lambda0x,
             slope_cdom=self.slope_cdom,
@@ -143,6 +143,13 @@ class TestForwardModel(object):
     def test_substrate_r(self):
         results = self.run_forward_model()
         assert np.allclose(results.r_substratum, self.expected_substrate_r)
+
+    def test_substrate_r_single_substrate(self):
+        # set the second substrate to None, and adjust the expectation that
+        # results.r_substratum will equal substrate1
+        self.substrate2 = None
+        results = self.run_forward_model()
+        assert np.allclose(results.r_substratum, self.substrate1)
 
     def test_rrs(self):
         results = self.run_forward_model()
