@@ -30,7 +30,7 @@ class PyTest(TestCommand):
 
 setup(
     name='sambuca-core',
-    version='0.1.1',
+    version='0.1.2',
     description='Core components for the SAMBUCA model',
     long_description=long_description,
 
