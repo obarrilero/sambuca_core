@@ -13,6 +13,10 @@ from .sensor_filter import (
     load_sensor_filters_excel,
     load_sensor_filter_spectral_library,
 )
+from .spectra_operations import (
+    spectra_find_common_wavelengths,
+    spectra_apply_wavelength_mask,
+)
 from .spectra_readers import (
     load_spectral_library,
     load_all_spectral_libraries,
