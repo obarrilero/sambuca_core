@@ -18,20 +18,28 @@ import sambuca_core as sbc
 def test_spectra_find_common_wavelengths():
     one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
     two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
-    mask = sbc.spectra_find_common_wavelengths(one, two)
+    mask = sbc.spectra_find_common_wavelengths(one[0], two[0])
     assert len(mask) == 3
     assert np.allclose(mask, np.asarray([2,3,4]))
 
 def test_mask_spectra_wavelengths():
     one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
     two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
-    mask = sbc.spectra_find_common_wavelengths(one, two)
+    mask = sbc.spectra_find_common_wavelengths(one[0], two[0])
 
     masked_wavs, masked_values = sbc.spectra_apply_wavelength_mask(one, mask)
     assert len(masked_wavs) == len(mask)
     assert len(masked_values) == len(mask)
     assert np.allclose(masked_wavs, np.asarray([2,3,4]))
     assert np.allclose(masked_values, np.asarray([20, 30, 40]))
+
+def test_spectra_find_common_wavelengths_called_with_tuple():
+    one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
+    two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
+    mask_wavs = sbc.spectra_find_common_wavelengths(one[0], two[0])
+    mask_tuple = sbc.spectra_find_common_wavelengths(one, two)
+
+    assert np.allclose(mask_wavs, mask_tuple)
 
 def test_mask_spectra_wavelengths_actual_data():
     filename = resource_filename(

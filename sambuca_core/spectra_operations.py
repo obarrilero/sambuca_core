@@ -13,11 +13,17 @@ from builtins import *
 import numpy as np
 
 
-def spectra_find_common_wavelengths(one, two):
-    """ Finds the common subset of wavelengths for the given pair of spectra
-    (wavelengths, values) tuples.
+def spectra_find_common_wavelengths(wavs_a, wavs_b):
+    """ Finds the common subset of wavelengths for the given pair.
+
+    Args:
+        wavs_a (array-like): a vector of wavelength values.
+        wavs_b (array-like): a vector of wavelength values.
+
+    Returns:
+        ndarray: The common subset of values.
     """
-    return np.intersect1d(one[0], two[0])
+    return np.intersect1d(wavs_a, wavs_b)
 
 
 def spectra_apply_wavelength_mask(spectra, mask):
@@ -26,7 +32,7 @@ def spectra_apply_wavelength_mask(spectra, mask):
 
     Args:
         spectra (tuple): the (wavelengths, values) spectra tuple.
-        mask (array-like): The mask of wavelength values.
+        mask (array-like): The wavelength values that should be retained.
 
     Returns:
         The masked tuple of (wavelengths, values).
