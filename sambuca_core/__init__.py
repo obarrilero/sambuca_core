@@ -14,9 +14,15 @@ from .sensor_filter import (
     load_sensor_filter_spectral_library,
 )
 from .spectra_readers import (
-    load_envi_spectral_library,
+    load_spectral_library,
     load_all_spectral_libraries,
-    load_excel_spectral_library
+    load_csv_spectral_library,
+    load_envi_spectral_library,
+    load_excel_spectral_library,
+)
+from .utility import (
+    strictly_decreasing,
+    strictly_increasing,
 )
 
 __author__ = 'Daniel Collins'

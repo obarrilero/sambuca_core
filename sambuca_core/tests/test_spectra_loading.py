@@ -18,10 +18,37 @@ import sambuca_core as sbc
 def spectra_name(base_name, band_name):
     return '{0}:{1}'.format(base_name, band_name)
 
+def check_moreton_bay_data(mbdata, expected_count=11):
+    assert isinstance(mbdata, dict)
+    assert len(mbdata) == expected_count
+
+    mb_names = ['Zostera muelleri',
+                'Halophila ovalis',
+                'Halophila spinulosa',
+                'Syringodium isoetifolium',
+                'Cymodocea serrulata',
+                'green algae',
+                'brown algae',
+                'brown Mud',
+                'light brown Mud',
+                'white Sand']
+
+    expected_names = [spectra_name('Moreton_Bay_speclib', x) for x in mb_names]
+    for expected_name in expected_names:
+        assert expected_name in mbdata
+
+    wavelengths, white_sand = mbdata['Moreton_Bay_speclib:white Sand']
+
+    assert len(wavelengths) == 600
+    assert len(white_sand) == 600
+    assert isinstance(wavelengths, np.ndarray)
+    assert isinstance(white_sand, np.ndarray)
+    assert np.allclose(wavelengths, (range(350, 950, 1)))
+
 
 class TestSubstrateLoading(object):
 
-    def test_valid_load_spectral_library(self):
+    def test_load_envi_spectral_library(self):
         directory = resource_filename(
             sbc.__name__,
             'tests/data/substrates')
@@ -98,29 +125,64 @@ class TestSubstrateLoading(object):
             'tests/data/substrates/Moreton_Bay_speclib.xlsx')
 
         loaded_substrates = sbc.load_excel_spectral_library(filename)
-        assert isinstance(loaded_substrates, dict)
-        assert len(loaded_substrates) == 11
+        check_moreton_bay_data(loaded_substrates)
 
-        mb_names = ['weird_substrate',  # loaded from second worksheet
-                    'Zostera muelleri',
-                    'Halophila ovalis',
-                    'Halophila spinulosa',
-                    'Syringodium isoetifolium',
-                    'Cymodocea serrulata',
-                    'green algae',
-                    'brown algae',
-                    'brown Mud',
-                    'light brown Mud',
-                    'white Sand']
+        # This extra spectra isn't tested in check_moreton_bay_data,
+        # as it isn't present in the csv version
+        assert 'Moreton_Bay_speclib:weird_substrate' in loaded_substrates
 
-        expected_names = [spectra_name('Moreton_Bay_speclib', x) for x in mb_names]
-        for expected_name in expected_names:
-            assert expected_name in loaded_substrates
+    def test_load_csv(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/substrates/Moreton_Bay_speclib.csv')
 
-        wavelengths, white_sand = loaded_substrates['Moreton_Bay_speclib:white Sand']
+        loaded_substrates = sbc.load_csv_spectral_library(filename)
+        check_moreton_bay_data(loaded_substrates, expected_count=10)
 
-        assert len(wavelengths) == 600
-        assert len(white_sand) == 600
-        assert isinstance(wavelengths, np.ndarray)
-        assert isinstance(white_sand, np.ndarray)
-        assert np.allclose(wavelengths, (range(350, 950, 1)))
+
+class TestMagicFileDetectionLoading(object):
+    def test_csv(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/siop/aw_340_900_lw2002_1nm.csv')
+
+        data = sbc.load_spectral_library(filename)
+        assert isinstance(data, dict)
+        assert len(data) == 1
+
+        wavs, values = data['aw_340_900_lw2002_1nm:awater']
+        assert len(wavs) == 562
+        assert min(wavs) == 340
+        assert max(wavs) == 901
+        assert sbc.strictly_increasing(wavs)
+
+    def test_excel(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/siop/aw_340_900_lw2002_1nm.xlsx')
+
+        data = sbc.load_spectral_library(filename)
+        assert isinstance(data, dict)
+        assert len(data) == 1
+
+        wavs, values = data['aw_340_900_lw2002_1nm:awater']
+        assert len(wavs) == 562
+        assert min(wavs) == 340
+        assert max(wavs) == 901
+        assert sbc.strictly_increasing(wavs)
+
+    def test_envi_hdr_extension(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/siop/WL_aphy_1nm.hdr')
+        data = sbc.load_spectral_library(filename)
+        assert isinstance(data, dict)
+        assert len(data) == 1
+
+    def test_missing(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/siop/missing_file')
+
+        with pytest.raises(FileNotFoundError):
+            sbc.load_spectral_library(filename)

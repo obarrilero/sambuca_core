@@ -64,6 +64,32 @@ def _add_dataframe_spectra_to_dictionary(dataframe, base_name, dictionary=None):
     return dictionary
 
 
+def load_csv_spectral_library(filename):
+    """ Loads a spectral library from a CSV file.
+    The CSV file must have a header row, and the wavelengths must be the first
+    column.
+
+    Args:
+        filename (str): full path to the Excel file.
+
+    Returns:
+       dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths,
+            while the second element contains the spectra.
+            The dictionary is keyed by spectra name, formed by concatenation
+            of the file and band names. This allows multiple spectra from multiple
+            files to be unambigiously collected into a dictionary.
+    """
+    dataframe = pd.read_csv(filename, index_col=0)
+    if not _validate_spectra_dataframe(dataframe):
+        raise DataValidationError('{0} failed validation'.format(filename))
+
+    # if normalise:
+    #     dataframe = _normalise_dataframe(dataframe)
+
+    base_name, _ = os.path.splitext(os.path.basename(filename))
+    return _add_dataframe_spectra_to_dictionary(dataframe, base_name)
+
 def load_excel_spectral_library(filename, sheet_names=None):
     """ Loads a spectral library from an Excel file. Both new style XLSX and
     old-style XLS formats are supported.
@@ -202,3 +228,45 @@ def load_all_spectral_libraries(path):
         merge_dictionary(all_spectra, new_spectra)
 
     return all_spectra
+
+
+def load_spectral_library(filename):
+    """" Loads a single spectral library from the given file name from any
+    supported format (selected by file extension).
+
+    Args:
+        filename (str): full path to the file.
+
+    Returns:
+        dict: A dictionary of 2-tuples of numpy.ndarrays.
+            The first element contains the band centre wavelengths of the input
+            bands, while the second element contains the spectra values.
+            Dictionary is keyed by spectra name built from the file and
+            band/sheet names, separated by a colon.
+
+            Note that names are not disambiguated, so that if more than one
+            filter has the same name, only the first will be returned and no
+            error will be raised (although it will be logged).
+    """
+    # TODO: add logging
+    # logging.getLogger(__name__).info(
+    #     'Loading Sensor filters from %s', path)
+
+    if not os.path.isfile(filename):
+        raise FileNotFoundError(filename)
+
+    base_name, extension = os.path.splitext(os.path.basename(filename))
+    extension = extension[1:].lower()
+
+    # excel
+    if extension in ['xls', 'xlsx']:
+        return load_excel_spectral_library(filename)
+    # CSV
+    if extension in ['csv']:
+        return load_csv_spectral_library(filename)
+    # ENVI Spectral Libraries
+    elif extension in ['hdr', 'lib']:
+        return load_envi_spectral_library(os.path.dirname(filename), base_name)
+
+    raise UnsupportedDataFormatError(
+        'filename {0} is not a supported format'.format(filename))
