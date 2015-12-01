@@ -10,9 +10,9 @@ from builtins import *
 from pkg_resources import resource_filename
 
 import numpy as np
-from scipy.io import readsav
-
+import pytest
 import sambuca_core as sbc
+from scipy.io import readsav
 
 
 # @skip
@@ -143,6 +143,22 @@ class TestForwardModel(object):
     def test_substrate_r(self):
         results = self.run_forward_model()
         assert np.allclose(results.r_substratum, self.expected_substrate_r)
+
+    def test_default_substrate_fraction(self):
+        # the default substrate_fraction should give r_substratum == substrate1
+        results = sbc.forward_model(
+            self.chl,
+            self.cdom,
+            self.nap,
+            self.H,
+            self.substrate1,
+            self.wav,
+            self.awater,
+            self.aphy_star,
+            551,
+            substrate2=self.substrate2)
+
+        assert np.allclose(results.r_substratum, self.substrate1)
 
     def test_substrate_r_single_substrate(self):
         # set the second substrate to None, and adjust the expectation that
