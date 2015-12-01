@@ -182,7 +182,7 @@ def load_envi_spectral_library(
 
 
 def load_all_spectral_libraries(path):
-    """" Loads all valid spectra from the given location.
+    """ Loads all valid spectra from the given location.
 
     Args:
         path (str): The directory path to scan for supported spectra files.
@@ -231,7 +231,7 @@ def load_all_spectral_libraries(path):
 
 
 def load_spectral_library(filename):
-    """" Loads a single spectral library from the given file name from any
+    """ Loads a single spectral library from the given file name from any
     supported format (selected by file extension).
 
     Args:
@@ -243,6 +243,7 @@ def load_spectral_library(filename):
             bands, while the second element contains the spectra values.
             Dictionary is keyed by spectra name built from the file and
             band/sheet names, separated by a colon.
+            For example: ``Moreton_Bay_speclib:white_sand``
 
             Note that names are not disambiguated, so that if more than one
             filter has the same name, only the first will be returned and no

@@ -28,7 +28,8 @@ ForwardModelResults = namedtuple('ForwardModelResults',
 """ namedtuple containing the forward model results.
 
 Attributes:
-    r_substratum (numpy.ndarray): The combined substrate.
+    r_substratum (numpy.ndarray): The combined substrate, or substrate1 if the
+        optional second substrate was not provided.
     rrs (numpy.ndarray): Modelled remotely-sensed reflectance.
     rrsdp (numpy.ndarray): Modelled optically-deep remotely-sensed reflectance.
     kd (numpy.ndarray): TODO

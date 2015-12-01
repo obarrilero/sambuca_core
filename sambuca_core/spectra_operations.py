@@ -21,14 +21,15 @@ def spectra_find_common_wavelengths(wavs_a, wavs_b):
         wavs_b (array-like): a vector of wavelength values.
 
     Returns:
-        ndarray: The common subset of values.
+        numpy.ndarray: The common subset of values.
     """
     return np.intersect1d(wavs_a, wavs_b)
 
 
 def spectra_apply_wavelength_mask(spectra, mask):
     """ Applies a wavelength mask to a spectra ((wavelengths, values) tuple).
-    All values in spectra that are not in the mask will be removed.
+    All values in the spectra that are not in the mask will be removed in the
+    returned values. The input spectra is not modified.
 
     Args:
         spectra (tuple): the (wavelengths, values) spectra tuple.
