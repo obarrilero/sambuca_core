@@ -79,10 +79,9 @@ def forward_model(
     TODO: For those arguments which have units, the units should be stated.
 
     Args:
-        chl (float): Concentration of chlorophyll (algal organic particles).
+        chl (float): Concentration of chlorophyll (algal organic particulates).
         cdom (float): Concentration of coloured dissolved organic particulates.
-        nap (float): Concentration of non-algal particles,
-            (also known as Tripton/tr in some literature).
+        nap (float): Concentration of non-algal particles.
         depth (float): Water column depth.
         substrate1 (array-like): A benthic substrate.
         wavelengths (array-like): Central wavelengths of the modelled
@@ -95,17 +94,19 @@ def forward_model(
         substrate2 (array-like, optional): A benthic substrate.
         slope_cdom (float, optional): slope of cdom absorption
         slope_nap (float, optional): slope of NAP absorption
-        slope_backscatter (float, optional): TODO
-        lambda0cdom (float, optional): TODO
-        lambda0nap (float, optional): TODO
-        lambda0x (float, optional): TODO
-        x_ph_lambda0x (float, optional): specific backscatter of chlorophyl
+        slope_backscatter (float, optional): Power law exponent for the
+            backscattering coefficient.
+        lambda0cdom (float, optional): Reference wavelength for CDOM absorption.
+        lambda0nap (float, optional): Reference wavelength for NAP absorption.
+        lambda0x (float, optional): Backscattering reference wavelength.
+        x_ph_lambda0x (float, optional): Specific backscatter of chlorophyl
             at lambda0x.
-        x_nap_lambda0x (float, optional): specific backscatter of tripton
+        x_nap_lambda0x (float, optional): Specific backscatter of NAP
             at lambda0x.
-        a_cdom_lambda0cdom (float, optional): TODO
-        a_nap_lambda0nap (float, optional): TODO
-        bb_lambda_ref (float, optional): TODO
+        a_cdom_lambda0cdom (float, optional): Absorption of CDOM at lambda0cdom.
+        a_nap_lambda0nap (float, optional): Absorption of NAP at lambda0nap.
+        bb_lambda_ref (float, optional): Reference wavelength for backscattering
+            coefficient.
         water_refractive_index (float, optional): refractive index of water.
         theta_air (float, optional): solar zenith angle in degrees
         off_nadir (float, optional): off-nadir angle
