@@ -29,7 +29,7 @@ class TestForwardModel(object):
             './tests/data/forward_model_test_data.sav')
         cls.data = readsav(filename)
         cls.unpack_parameters()
-        cls.unpack_input_spectra()
+        cls.unpack_spectra()
         cls.unpack_input_params()
         cls.unpack_results()
         cls.unpack_substrates()
@@ -57,13 +57,16 @@ class TestForwardModel(object):
         cls.H = zz[13]
 
     @classmethod
-    def unpack_input_spectra(cls):
+    def unpack_spectra(cls):
         s = cls.data.sambuca.input_spectra[0]
         cls.wav = s.wl[0]
-        cls.awater = s.awater[0]
-        # cls.bbwater = s.bbwater[0]
-        cls.aphy_star = s.aphy_star[0]
-        # cls.acdom_star = s.acdom_star[0]
+        cls.a_water = s.awater[0]
+        cls.bb_water = s.bbwater[0]
+        cls.a_ph_star = s.aphy_star[0]
+        cls.a_cdom_star = s.acdom_star[0]
+        cls.a_nap_star = s.atr_star[0]
+        cls.bb_ph_star = s.bbph_star[0]
+        cls.bb_nap_star = s.bbtr_star[0]
 
     @classmethod
     def unpack_input_params(cls):
@@ -98,8 +101,8 @@ class TestForwardModel(object):
 
         spectra = [
             self.wav,
-            self.awater,
-            self.aphy_star,
+            self.a_water,
+            self.a_ph_star,
             self.expected_substrate_r,
             self.expected_rrs,
             self.expected_rrsdp,
@@ -122,8 +125,8 @@ class TestForwardModel(object):
             self.H,
             self.substrate1,
             self.wav,
-            self.awater,
-            self.aphy_star,
+            self.a_water,
+            self.a_ph_star,
             551,
             substrate_fraction=self.q1,
             substrate2=self.substrate2,
@@ -153,8 +156,8 @@ class TestForwardModel(object):
             self.H,
             self.substrate1,
             self.wav,
-            self.awater,
-            self.aphy_star,
+            self.a_water,
+            self.a_ph_star,
             551,
             substrate2=self.substrate2)
 
@@ -220,5 +223,111 @@ class TestForwardModel(object):
         assert np.allclose(
             results.bb,
             self.expected_bb,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_a_cdom_star(self):
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.a_cdom_star,
+            self.a_cdom_star,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_a_nap_star(self):
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.a_nap_star,
+            self.a_nap_star,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_bb_water(self):
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.bb_water,
+            self.bb_water,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_bb_ph_star(self):
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.bb_ph_star,
+            self.bb_ph_star,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_bb_nap_star(self):
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.bb_nap_star,
+            self.bb_nap_star,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_a_ph(self):
+        # Derive the phytoplankton absorption from the specific absorption
+        # and chl concentration inputs.
+        # a_ph = chl * aphy*
+        expected_a_ph = self.chl * self.a_ph_star
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.a_ph,
+            expected_a_ph)
+
+    def test_a_cdom(self):
+        # I don't have a_cdom data from IDL, but I know what it should be.
+        # a_cdom = a_cdom* * cdom
+        results = self.run_forward_model()
+        expected_a_cdom = results.a_cdom_star * self.cdom
+        assert np.allclose(
+            results.a_cdom,
+            expected_a_cdom)
+
+    def test_a_nap(self):
+        # I don't have a_nap data from IDL, but I know what it should be.
+        # a_nap = a_nap* * nap
+        results = self.run_forward_model()
+        expected_a_nap = results.a_nap_star * self.nap
+        assert np.allclose(
+            results.a_nap,
+            expected_a_nap)
+
+    def test_bb_ph(self):
+         # expected bb_ph = bb_ph_star * chl
+        expected_bb_ph = self.chl * self.bb_ph_star
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.bb_ph,
+            expected_bb_ph,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_bb_nap(self):
+        # expected bb_nap = bb_nap_star * nap
+        expected_bb_nap = self.nap * self.bb_nap_star
+        results = self.run_forward_model()
+        assert np.allclose(
+            results.bb_nap,
+            expected_bb_nap,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_total_absorption(self):
+        results = self.run_forward_model()
+        expected_a = self.a_water + results.a_ph + results.a_cdom + results.a_nap
+        assert np.allclose(
+            results.a,
+            expected_a,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_total_backscatter(self):
+        results = self.run_forward_model()
+        expected_bb = results.bb_water + results.bb_ph + results.bb_nap
+        assert np.allclose(
+            results.bb,
+            expected_bb,
             atol=self.atol,
             rtol=self.rtol)

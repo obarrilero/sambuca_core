@@ -23,9 +23,19 @@ ForwardModelResults = namedtuple('ForwardModelResults',
                                      'kub',
                                      'kuc',
                                      'a',
+                                     'a_cdom_star',
+                                     'a_nap_star',
+                                     'a_ph',
+                                     'a_cdom',
+                                     'a_nap',
                                      'bb',
+                                     'bb_ph_star',
+                                     'bb_nap_star',
+                                     'bb_ph',
+                                     'bb_nap',
+                                     'bb_water',
                                  ])
-""" namedtuple containing the forward model results.
+""" A namedtuple containing the forward model results.
 
 Attributes:
     r_substratum (numpy.ndarray): The combined substrate, or substrate1 if the
@@ -35,8 +45,21 @@ Attributes:
     kd (numpy.ndarray): TODO
     kub (numpy.ndarray): TODO
     kuc (numpy.ndarray): TODO
-    a (numpy.ndarray): Total absorption.
-    bb (numpy.ndarray): Total backscatter.
+    a (numpy.ndarray): Modelled total absorption (absorption due to water + a_ph
+        + a_cdom + a_nap)
+    a_cdom_star (numpy.ndarray): Modelled specific absorption of coloured
+        dissolved organic particulates (CDOM).
+    a_nap_star (numpy.ndarray): Modelled specific absorption of non-algal
+        particulates (NAP).
+    a_ph (numpy.ndarray): Modelled absorption of phytoplankton.
+    a_cdom (numpy.ndarray): Modelled absorption of CDOM.
+    a_nap (numpy.ndarray): Modelled absorption of NAP.
+    bb (numpy.ndarray): Modelled total backscatter (bb_water + bb_ph + bb_nap).
+    bb_ph_star (numpy.ndarray): Modelled specific backscatter of phytoplankton.
+    bb_nap_star (numpy.ndarray): Modelled specific backscatter of NAP.
+    bb_ph (numpy.ndarray): Modelled backscatter of phytoplankton.
+    bb_nap(numpy.ndarray): Modelled backscatter of NAP.
+    bb_water(numpy.ndarray): Modelled backscatter of water.
 """
 
 
@@ -53,8 +76,8 @@ def forward_model(
         depth,
         substrate1,
         wavelengths,
-        awater,
-        aphy_star,
+        a_water,
+        a_ph_star,
         num_bands,
         substrate_fraction=1,
         substrate2=None,
@@ -80,14 +103,15 @@ def forward_model(
 
     Args:
         chl (float): Concentration of chlorophyll (algal organic particulates).
-        cdom (float): Concentration of coloured dissolved organic particulates.
-        nap (float): Concentration of non-algal particles.
+        cdom (float): Concentration of coloured dissolved organic particulates
+            (CDOM).
+        nap (float): Concentration of non-algal particulates (NAP).
         depth (float): Water column depth.
         substrate1 (array-like): A benthic substrate.
         wavelengths (array-like): Central wavelengths of the modelled
             spectral bands.
-        awater (array-like): Absorption coefficient of pure water
-        aphy_star (array-like): Specific absorption of phytoplankton.
+        a_water (array-like): Absorption coefficient of pure water
+        a_ph_star (array-like): Specific absorption of phytoplankton.
         num_bands (int): The number of spectral bands.
         substrate_fraction (float): Substrate proportion, used to generate a
             convex combination of substrate1 and substrate2.
@@ -119,35 +143,41 @@ def forward_model(
     if substrate2 is not None:
         assert len(substrate2) == num_bands
     assert len(wavelengths) == num_bands
-    assert len(awater) == num_bands
-    assert len(aphy_star) == num_bands
+    assert len(a_water) == num_bands
+    assert len(a_ph_star) == num_bands
 
     # Sub-surface solar zenith angle in radians
     inv_refractive_index = 1.0 / water_refractive_index
-    thetaw = math.asin(inv_refractive_index * math.sin(math.radians(theta_air)))
+    theta_w = math.asin(inv_refractive_index * math.sin(math.radians(theta_air)))
 
     # Sub-surface viewing angle in radians
-    thetao = math.asin(inv_refractive_index * math.sin(math.radians(off_nadir)))
+    theta_o = math.asin(inv_refractive_index * math.sin(math.radians(off_nadir)))
 
     # Calculate derived SIOPS, based on
     # Mobley, Curtis D., 1994: Radiative Transfer in natural waters.
-    bbwater = (0.00194 / 2.0) * np.power(bb_lambda_ref / wavelengths, 4.32)
-    acdom_star = a_cdom_lambda0cdom * \
+    bb_water = (0.00194 / 2.0) * np.power(bb_lambda_ref / wavelengths, 4.32)
+    a_cdom_star = a_cdom_lambda0cdom * \
         np.exp(-slope_cdom * (wavelengths - lambda0cdom))
-    atr_star = a_nap_lambda0nap * \
+    a_nap_star = a_nap_lambda0nap * \
         np.exp(-slope_nap * (wavelengths - lambda0nap))
 
     # Calculate backscatter
     backscatter = np.power(lambda0x / wavelengths, slope_backscatter)
-    # backscatter due to phytoplankton
-    bbph_star = x_ph_lambda0x * backscatter
-    # backscatter due to tripton
-    bbtr_star = x_nap_lambda0x * backscatter
+    # specific backscatter due to phytoplankton
+    bb_ph_star = x_ph_lambda0x * backscatter
+    # specific backscatter due to NAP
+    bb_nap_star = x_nap_lambda0x * backscatter
 
     # Total absorption
-    a = awater + chl * aphy_star + cdom * acdom_star + nap * atr_star
+    a_ph = chl * a_ph_star
+    a_cdom = cdom * a_cdom_star
+    a_nap = nap * a_nap_star
+    a = a_water + a_ph + a_cdom + a_nap
+
     # Total backscatter
-    bb = bbwater + chl * bbph_star + nap * bbtr_star
+    bb_ph = chl * bb_ph_star
+    bb_nap = nap * bb_nap_star
+    bb = bb_water + bb_ph + bb_nap
 
     # Calculate total bottom reflectance from the two substrates
     r_substratum = substrate1
@@ -170,22 +200,22 @@ def forward_model(
     rrsdp = (0.084 + 0.17 * u) * u
 
     # common terms in the following calculations
-    inv_cos_thetaw = 1.0 / math.cos(thetaw)
-    inv_cos_theta0 = 1.0 / math.cos(thetao)
-    du_column_scaled = du_column * inv_cos_theta0
-    du_bottom_scaled = du_bottom * inv_cos_theta0
+    inv_cos_theta_w = 1.0 / math.cos(theta_w)
+    inv_cos_theta_0 = 1.0 / math.cos(theta_o)
+    du_column_scaled = du_column * inv_cos_theta_0
+    du_bottom_scaled = du_bottom * inv_cos_theta_0
 
     # TODO: descriptions of kd, kuc, kub
-    kd = kappa * inv_cos_thetaw
+    kd = kappa * inv_cos_theta_w
     kuc = kappa * du_column_scaled
     kub = kappa * du_bottom_scaled
 
     # Remotely sensed reflectance
     kappa_d = kappa * depth
     rrs = (rrsdp *
-           (1.0 - np.exp(-(inv_cos_thetaw + du_column_scaled) * kappa_d)) +
+           (1.0 - np.exp(-(inv_cos_theta_w + du_column_scaled) * kappa_d)) +
            ((1.0 / math.pi) * r_substratum *
-            np.exp(-(inv_cos_thetaw + du_bottom_scaled) * kappa_d)))
+            np.exp(-(inv_cos_theta_w + du_bottom_scaled) * kappa_d)))
 
     return ForwardModelResults(
         r_substratum,
@@ -195,7 +225,17 @@ def forward_model(
         kub,
         kuc,
         a,
+        a_cdom_star,
+        a_nap_star,
+        a_ph,
+        a_cdom,
+        a_nap,
         bb,
+        bb_ph_star,
+        bb_nap_star,
+        bb_ph,
+        bb_nap,
+        bb_water,
     )
 
 # pylint: enable=too-many-arguments
