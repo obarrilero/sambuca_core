@@ -92,7 +92,7 @@ def forward_model(
         substrate_fraction (float): Substrate proportion, used to generate a
             convex combination of substrate1 and substrate2.
         substrate2 (array-like, optional): A benthic substrate.
-        slope_cdom (float, optional): slope of cdom absorption
+        slope_cdom (float, optional): slope of CDOM absorption
         slope_nap (float, optional): slope of NAP absorption
         slope_backscatter (float, optional): Power law exponent for the
             backscattering coefficient.
