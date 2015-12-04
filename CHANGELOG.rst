@@ -21,3 +21,18 @@ Changelog
   being calculated anyway, and they were required by Bioopti.
 * Docstrings are now almost complete.
 * Some naming inconsistencies have been addressed.
+
+1.2.0 (2015-12-04)
+------------------
+
+* forward model changes:
+  * renamed slope_cdom to a_cdom_slope to indicate that it is an absorption
+    value, and for consistency with the main naming convention.
+  * renamed slope_nap to a_nap_slope for the same reasons.
+  * split backscatter slope into two values, one for phytoplankton, and one for
+    NAP. Both are optional, and if the NAP backscatter slope value is not
+    supplied, the phytoplankton backscatter slope value will be reused. This
+    preserves the behaviour of the IDL model which only has a single backscatter
+    slope value for both phytoplankton and NAP. The new slope parameter names
+    conform to the primary naming convention.
+

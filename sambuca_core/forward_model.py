@@ -81,9 +81,10 @@ def forward_model(
         num_bands,
         substrate_fraction=1,
         substrate2=None,
-        slope_cdom=0.0168052,
-        slope_nap=0.00977262,
-        slope_backscatter=0.878138,
+        a_cdom_slope=0.0168052,
+        a_nap_slope=0.00977262,
+        bb_ph_slope=0.878138,
+        bb_nap_slope=None,
         lambda0cdom=550.0,
         lambda0nap=550.0,
         lambda0x=546.0,
@@ -116,10 +117,13 @@ def forward_model(
         substrate_fraction (float): Substrate proportion, used to generate a
             convex combination of substrate1 and substrate2.
         substrate2 (array-like, optional): A benthic substrate.
-        slope_cdom (float, optional): slope of CDOM absorption
-        slope_nap (float, optional): slope of NAP absorption
-        slope_backscatter (float, optional): Power law exponent for the
-            backscattering coefficient.
+        a_cdom_slope (float, optional): slope of CDOM absorption
+        a_nap_slope (float, optional): slope of NAP absorption
+        bb_ph_slope (float, optional): Power law exponent for the
+            phytoplankton backscattering coefficient.
+        bb_nap_slope (float, optional): Power law exponent for the
+            NAP backscattering coefficient. If no value is supplied, the default
+            behaviour is to use the bb_ph_slope value.
         lambda0cdom (float, optional): Reference wavelength for CDOM absorption.
         lambda0nap (float, optional): Reference wavelength for NAP absorption.
         lambda0x (float, optional): Backscattering reference wavelength.
@@ -157,15 +161,19 @@ def forward_model(
     # Mobley, Curtis D., 1994: Radiative Transfer in natural waters.
     bb_water = (0.00194 / 2.0) * np.power(bb_lambda_ref / wavelengths, 4.32)
     a_cdom_star = a_cdom_lambda0cdom * \
-        np.exp(-slope_cdom * (wavelengths - lambda0cdom))
+        np.exp(-a_cdom_slope * (wavelengths - lambda0cdom))
     a_nap_star = a_nap_lambda0nap * \
-        np.exp(-slope_nap * (wavelengths - lambda0nap))
+        np.exp(-a_nap_slope * (wavelengths - lambda0nap))
 
     # Calculate backscatter
-    backscatter = np.power(lambda0x / wavelengths, slope_backscatter)
+    backscatter = np.power(lambda0x / wavelengths, bb_ph_slope)
     # specific backscatter due to phytoplankton
     bb_ph_star = x_ph_lambda0x * backscatter
     # specific backscatter due to NAP
+     # If a bb_nap_slope value has been supplied, use it.
+     # Otherwise, reuse bb_ph_slope.
+    if bb_nap_slope:
+        backscatter = np.power(lambda0x / wavelengths, bb_nap_slope)
     bb_nap_star = x_nap_lambda0x * backscatter
 
     # Total absorption
