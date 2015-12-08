@@ -77,8 +77,8 @@ def load_csv_spectral_library(filename):
             The first element contains the band centre wavelengths,
             while the second element contains the spectra.
             The dictionary is keyed by spectra name, formed by concatenation
-            of the file and band names. This allows multiple spectra from multiple
-            files to be unambigiously collected into a dictionary.
+            of the file and band names. This allows multiple spectra from
+            multiple files to be unambigiously collected into a dictionary.
     """
     dataframe = pd.read_csv(filename, index_col=0)
     if not _validate_spectra_dataframe(dataframe):
@@ -104,8 +104,8 @@ def load_excel_spectral_library(filename, sheet_names=None):
             The first element contains the band centre wavelengths,
             while the second element contains the spectra.
             The dictionary is keyed by spectra name, formed by concatenation
-            of the file and band names. This allows multiple spectra from multiple
-            files to be unambigiously collected into a dictionary.
+            of the file and band names. This allows multiple spectra from
+            multiple files to be unambigiously collected into a dictionary.
     """
     all_spectra = {}
     with pd.ExcelFile(filename) as excel_file:
@@ -151,8 +151,8 @@ def load_envi_spectral_library(
             The first element contains the band centre wavelengths,
             while the second element contains the spectra.
             The dictionary is keyed by spectra name, formed by concatenation
-            of the file and band names. This allows multiple spectra from multiple
-            files to be unambigiously collected into a dictionary.
+            of the file and band names. This allows multiple spectra from
+            multiple files to be unambigiously collected into a dictionary.
     """
 
     full_filename = os.path.join(directory, base_filename)

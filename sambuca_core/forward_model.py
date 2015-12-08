@@ -159,10 +159,12 @@ def forward_model(
 
     # Sub-surface solar zenith angle in radians
     inv_refractive_index = 1.0 / water_refractive_index
-    theta_w = math.asin(inv_refractive_index * math.sin(math.radians(theta_air)))
+    theta_w = \
+        math.asin(inv_refractive_index * math.sin(math.radians(theta_air)))
 
     # Sub-surface viewing angle in radians
-    theta_o = math.asin(inv_refractive_index * math.sin(math.radians(off_nadir)))
+    theta_o = \
+        math.asin(inv_refractive_index * math.sin(math.radians(off_nadir)))
 
     # Calculate derived SIOPS, based on
     # Mobley, Curtis D., 1994: Radiative Transfer in natural waters.
