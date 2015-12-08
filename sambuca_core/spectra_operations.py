@@ -40,4 +40,4 @@ def spectra_apply_wavelength_mask(spectra, mask):
     """
 
     boolean_mask = (spectra[0] >= mask.min()) & (spectra[0] <= mask.max())
-    return (spectra[0][boolean_mask], spectra[1][boolean_mask])
+    return spectra[0][boolean_mask], spectra[1][boolean_mask]
