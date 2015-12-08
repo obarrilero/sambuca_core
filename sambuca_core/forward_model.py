@@ -23,11 +23,13 @@ ForwardModelResults = namedtuple('ForwardModelResults',
                                      'kub',
                                      'kuc',
                                      'a',
+                                     'a_ph_star',
                                      'a_cdom_star',
                                      'a_nap_star',
                                      'a_ph',
                                      'a_cdom',
                                      'a_nap',
+                                     'a_water',
                                      'bb',
                                      'bb_ph_star',
                                      'bb_nap_star',
@@ -47,6 +49,9 @@ Attributes:
     kuc (numpy.ndarray): TODO
     a (numpy.ndarray): Modelled total absorption (absorption due to water + a_ph
         + a_cdom + a_nap)
+    a_ph_star (numpy.ndarray): Specific absorption of phytoplankton. Although
+        this is an input to the Sambuca model, it is included here for ease of
+        access by client code.
     a_cdom_star (numpy.ndarray): Modelled specific absorption of coloured
         dissolved organic particulates (CDOM).
     a_nap_star (numpy.ndarray): Modelled specific absorption of non-algal
@@ -54,6 +59,8 @@ Attributes:
     a_ph (numpy.ndarray): Modelled absorption of phytoplankton.
     a_cdom (numpy.ndarray): Modelled absorption of CDOM.
     a_nap (numpy.ndarray): Modelled absorption of NAP.
+    a_water (numpy.ndarray): Absorption coefficient of water. Another model
+        input included in the results structure for convenience.
     bb (numpy.ndarray): Modelled total backscatter (bb_water + bb_ph + bb_nap).
     bb_ph_star (numpy.ndarray): Modelled specific backscatter of phytoplankton.
     bb_nap_star (numpy.ndarray): Modelled specific backscatter of NAP.
@@ -226,24 +233,26 @@ def forward_model(
             np.exp(-(inv_cos_theta_w + du_bottom_scaled) * kappa_d)))
 
     return ForwardModelResults(
-        r_substratum,
-        rrs,
-        rrsdp,
-        kd,
-        kub,
-        kuc,
-        a,
-        a_cdom_star,
-        a_nap_star,
-        a_ph,
-        a_cdom,
-        a_nap,
-        bb,
-        bb_ph_star,
-        bb_nap_star,
-        bb_ph,
-        bb_nap,
-        bb_water,
+        r_substratum=r_substratum,
+        rrs=rrs,
+        rrsdp=rrsdp,
+        kd=kd,
+        kub=kub,
+        kuc=kuc,
+        a=a,
+        a_ph_star=a_ph_star,
+        a_cdom_star=a_cdom_star,
+        a_nap_star=a_nap_star,
+        a_ph=a_ph,
+        a_cdom=a_cdom,
+        a_nap=a_nap,
+        a_water=a_water,
+        bb=bb,
+        bb_ph_star=bb_ph_star,
+        bb_nap_star=bb_nap_star,
+        bb_ph=bb_ph,
+        bb_nap=bb_nap,
+        bb_water=bb_water,
     )
 
 # pylint: enable=too-many-arguments
