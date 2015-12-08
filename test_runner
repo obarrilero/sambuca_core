@@ -6,8 +6,8 @@ while [ $i -lt $1 ]; do
     let i=i+1
     clear
 
-    if [ "$2" == "slow" ]; then
-        make test-slow
+    if [ "$2" ]; then
+        $2
     else
         make test
     fi
