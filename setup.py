@@ -93,8 +93,10 @@ setup(
     install_requires=[
         'future',
         'numpy',
+        'pandas',
         'scipy',
         'spectral',
+        'xlrd',
     ],
 
     # List additional groups of dependencies here (e.g. development
