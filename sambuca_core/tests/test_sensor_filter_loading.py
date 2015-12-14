@@ -204,7 +204,7 @@ class TestLoadAllSensorFilters(object):
 
     def test_filter_names(self):
         expected_names = [
-            'CASI04',  # Spectral Library
+            'casi04',  # Spectral Library
             'qbtest',  # Spectral Library
             '3_band_350_900',  # XLSX
             '4_band_300_1000',  # XLSX
@@ -233,4 +233,4 @@ class TestLoadAllSensorFilters(object):
             directory,
             normalise=False,
             spectral_library_name_parser=lambda path:
-            splitext(basename(path))[0].split('_')[0])
+            splitext(basename(path).lower())[0].split('_')[0])
