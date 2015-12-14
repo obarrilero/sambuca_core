@@ -36,6 +36,7 @@ class TestForwardModel(object):
         # TODO: Why are my outputs not closer? IDL data appears to read in as single precision.
         cls.rtol = 1e-3
         cls.atol = 5e-4
+        cls.q_factor = np.pi
 
     @classmethod
     def unpack_parameters(cls):
@@ -142,6 +143,7 @@ class TestForwardModel(object):
             theta_air=self.theta_air,
             water_refractive_index=1.333,  # The hard-coded IDL value
             # self.off_nadir,
+            q_factor=self.q_factor,
         )
 
     def test_substrate_r(self):
@@ -184,6 +186,26 @@ class TestForwardModel(object):
         assert np.allclose(
             results.rrsdp,
             self.expected_rrsdp,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_r_0_minus(self):
+        self.q_factor = 3.5123
+        results = self.run_forward_model()
+        expected_r_0_minus = results.rrs * self.q_factor
+        assert np.allclose(
+            results.r_0_minus,
+            expected_r_0_minus,
+            atol=self.atol,
+            rtol=self.rtol)
+
+    def test_r_0_minus_deep(self):
+        self.q_factor = np.pi
+        results = self.run_forward_model()
+        expected_rdp_0_minus = results.rrsdp * self.q_factor
+        assert np.allclose(
+            results.rdp_0_minus,
+            expected_rdp_0_minus,
             atol=self.atol,
             rtol=self.rtol)
 

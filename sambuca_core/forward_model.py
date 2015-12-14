@@ -19,6 +19,8 @@ ForwardModelResults = namedtuple('ForwardModelResults',
                                      'r_substratum',
                                      'rrs',
                                      'rrsdp',
+                                     'r_0_minus',
+                                     'rdp_0_minus',
                                      'kd',
                                      'kub',
                                      'kuc',
@@ -44,6 +46,10 @@ Attributes:
         optional second substrate was not provided.
     rrs (numpy.ndarray): Modelled remotely-sensed reflectance.
     rrsdp (numpy.ndarray): Modelled optically-deep remotely-sensed reflectance.
+    r_0_minus (numpy.ndarray): Modelled remotely-sensed closed reflectance
+        (R(0-)).
+    rdp_0_minus (numpy.ndarray): Modelled optically-deep remotely-sensed closed
+        reflectance (Rdp(0-)).
     kd (numpy.ndarray): TODO
     kub (numpy.ndarray): TODO
     kuc (numpy.ndarray): TODO
@@ -102,7 +108,8 @@ def forward_model(
         bb_lambda_ref=550,
         water_refractive_index=REFRACTIVE_INDEX_SEAWATER,
         theta_air=30.0,
-        off_nadir=0.0):
+        off_nadir=0.0,
+        q_factor=np.pi):
     """Semi-analytical Lee/Sambuca forward model.
 
     TODO: Extended description goes here.
@@ -143,8 +150,10 @@ def forward_model(
         bb_lambda_ref (float, optional): Reference wavelength for backscattering
             coefficient.
         water_refractive_index (float, optional): refractive index of water.
-        theta_air (float, optional): solar zenith angle in degrees
-        off_nadir (float, optional): off-nadir angle
+        theta_air (float, optional): solar zenith angle in degrees.
+        off_nadir (float, optional): off-nadir angle.
+        q_factor (float, optional): q value for producing the R(0-) values from
+            modelled remotely-sensed reflectance (rrs) values.
 
     Returns:
         ForwardModelResults: A namedtuple containing the model outputs.
@@ -238,6 +247,8 @@ def forward_model(
         r_substratum=r_substratum,
         rrs=rrs,
         rrsdp=rrsdp,
+        r_0_minus=rrs * q_factor,
+        rdp_0_minus=rrsdp * q_factor,
         kd=kd,
         kub=kub,
         kuc=kuc,
