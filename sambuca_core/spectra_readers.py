@@ -58,7 +58,7 @@ def _add_dataframe_spectra_to_dictionary(dataframe, base_name, dictionary=None):
     """
     dictionary = {} if not dictionary else dictionary
     for column in dataframe:
-        dictionary['{0}:{1}'.format(base_name, column)] = (
+        dictionary['{0}:{1}'.format(base_name.lower(), column)] = (
             np.array(dataframe.index),
             dataframe[column].values)
     return dictionary
@@ -79,6 +79,8 @@ def load_csv_spectral_library(filename):
             The dictionary is keyed by spectra name, formed by concatenation
             of the file and band names. This allows multiple spectra from
             multiple files to be unambigiously collected into a dictionary.
+            Note that the filename component is always converted to lower case.
+            This is required for consistent results on Linux and Windows.
     """
     dataframe = pd.read_csv(filename, index_col=0)
     if not _validate_spectra_dataframe(dataframe):
@@ -106,6 +108,8 @@ def load_excel_spectral_library(filename, sheet_names=None):
             The dictionary is keyed by spectra name, formed by concatenation
             of the file and band names. This allows multiple spectra from
             multiple files to be unambigiously collected into a dictionary.
+            Note that the filename component is always converted to lower case.
+            This is required for consistent results on Linux and Windows.
     """
     all_spectra = {}
     with pd.ExcelFile(filename) as excel_file:
@@ -153,6 +157,8 @@ def load_envi_spectral_library(
             The dictionary is keyed by spectra name, formed by concatenation
             of the file and band names. This allows multiple spectra from
             multiple files to be unambigiously collected into a dictionary.
+            Note that the filename component is always converted to lower case.
+            This is required for consistent results on Linux and Windows.
     """
 
     full_filename = os.path.join(directory, base_filename)
@@ -197,6 +203,9 @@ def load_all_spectral_libraries(path):
             Note that names are not disambiguated, so that if more than one
             filter has the same name, only the first will be returned and no
             error will be raised (although it will be logged).
+
+            Note that the filename component is always converted to lower case.
+            This is required for consistent results on Linux and Windows.
     """
     # TODO: add logging
     # logging.getLogger(__name__).info(
@@ -248,6 +257,9 @@ def load_spectral_library(filename):
             Note that names are not disambiguated, so that if more than one
             filter has the same name, only the first will be returned and no
             error will be raised (although it will be logged).
+
+            Note that the filename component is always converted to lower case.
+            This is required for consistent results on Linux and Windows.
     """
     # TODO: add logging
     # logging.getLogger(__name__).info(

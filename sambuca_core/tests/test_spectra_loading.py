@@ -33,11 +33,11 @@ def check_moreton_bay_data(mbdata, expected_count=11):
                 'light brown Mud',
                 'white Sand']
 
-    expected_names = [spectra_name('Moreton_Bay_speclib', x) for x in mb_names]
+    expected_names = [spectra_name('moreton_bay_speclib', x) for x in mb_names]
     for expected_name in expected_names:
         assert expected_name in mbdata
 
-    wavelengths, white_sand = mbdata['Moreton_Bay_speclib:white Sand']
+    wavelengths, white_sand = mbdata['moreton_bay_speclib:white Sand']
 
     assert len(wavelengths) == 600
     assert len(white_sand) == 600
@@ -58,14 +58,14 @@ class TestSubstrateLoading(object):
             directory,
             base_name)
 
-        expected_spectra = [spectra_name(base_name, x) for x in ['Acropora', 'sand', 'Turf Algae']]
+        expected_spectra = [spectra_name(base_name.lower(), x) for x in ['Acropora', 'sand', 'Turf Algae']]
         assert isinstance(loaded_substrates, dict)
         assert len(loaded_substrates) == 3
 
         for expected_name in expected_spectra:
             assert expected_name in loaded_substrates
 
-        wavelengths, sand = loaded_substrates['HI_3:sand']
+        wavelengths, sand = loaded_substrates['hi_3:sand']
 
         assert len(wavelengths) == 602
         assert len(sand) == 602
@@ -98,11 +98,11 @@ class TestSubstrateLoading(object):
                     'light brown Mud',
                     'white Sand']
 
-        expected_names = [spectra_name('Moreton_Bay_speclib_final', x) for x in mb_names]
+        expected_names = [spectra_name('moreton_bay_speclib_final', x) for x in mb_names]
         for expected_name in expected_names:
             assert expected_name in loaded_substrates
 
-        wavelengths, mud = loaded_substrates['Moreton_Bay_speclib_final:brown Mud']
+        wavelengths, mud = loaded_substrates['moreton_bay_speclib_final:brown Mud']
 
         assert len(wavelengths) == 600
         assert len(mud) == 600
@@ -129,7 +129,7 @@ class TestSubstrateLoading(object):
 
         # This extra spectra isn't tested in check_moreton_bay_data,
         # as it isn't present in the csv version
-        assert 'Moreton_Bay_speclib:weird_substrate' in loaded_substrates
+        assert 'moreton_bay_speclib:weird_substrate' in loaded_substrates
 
     def test_load_csv(self):
         filename = resource_filename(

@@ -33,3 +33,10 @@ Changelog
     slope value for both phytoplankton and NAP. The new slope parameter names
     conform to the primary naming convention.
 
+1.2.1 (2015-12-04)
+------------------
+* Implemented q_factor and R(0-) calculations.
+
+1.2.2 (2015-12-04)
+------------------
+* Fixed filename case-sensitivity issue between Windows and Linux.
