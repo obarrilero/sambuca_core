@@ -186,3 +186,21 @@ class TestMagicFileDetectionLoading(object):
 
         with pytest.raises(FileNotFoundError):
             sbc.load_spectral_library(filename)
+
+class TestValidationFlag(object):
+    def test_invalid_file_fails(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/nedr/fails_validation.hdr')
+
+        with pytest.raises(sbc.DataValidationError):
+            sbc.load_spectral_library(filename, validate=True)
+
+    def test_invalid_file_loads(self):
+        filename = resource_filename(
+            sbc.__name__,
+            'tests/data/nedr/fails_validation.hdr')
+
+        data = sbc.load_spectral_library(filename, validate=False)
+        assert isinstance(data, dict)
+        assert len(data) == 1
