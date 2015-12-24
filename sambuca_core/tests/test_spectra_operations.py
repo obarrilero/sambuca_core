@@ -15,27 +15,45 @@ from pkg_resources import resource_filename
 import sambuca_core as sbc
 
 
+def test_spectra_find_common_wavelengths_no_intersection_returns_empty_array():
+    a = ([1,2,3,4,5], [10,20,30,40,50])
+    b = ([25,26,27], [6,13,9])
+    c = ([26,27,28], [11,42,8])
+    mask = sbc.spectra_find_common_wavelengths(a, b, c)
+    assert not mask
+    assert len(mask) == 0
+
+def test_spectra_find_common_wavelengths_4_spectra():
+    # build 4 fake spectra tuples (wavelengths, values)
+    a = ([1,2,3,4,5], [10,20,30,40,50])
+    b = ([2,3,4], [6,13,9])
+    c = ([3,4,5], [11,42,8])
+    d = ([1,2,3,4], [19,7,73,13])
+    mask = sbc.spectra_find_common_wavelengths(a, b, c, d)
+    assert len(mask) == 2
+    assert np.allclose(mask, [3,4])
+
 def test_spectra_find_common_wavelengths():
-    one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
-    two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
+    one = ([1,2,3,4,5], [10,20,30,40,50])
+    two = ([2,3,4], [2,3,4])
     mask = sbc.spectra_find_common_wavelengths(one[0], two[0])
     assert len(mask) == 3
-    assert np.allclose(mask, np.asarray([2,3,4]))
+    assert np.allclose(mask, [2,3,4])
 
 def test_mask_spectra_wavelengths():
     one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
     two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
-    mask = sbc.spectra_find_common_wavelengths(one[0], two[0])
+    mask = sbc.spectra_find_common_wavelengths(one, two)
 
     masked_wavs, masked_values = sbc.spectra_apply_wavelength_mask(one, mask)
     assert len(masked_wavs) == len(mask)
     assert len(masked_values) == len(mask)
-    assert np.allclose(masked_wavs, np.asarray([2,3,4]))
-    assert np.allclose(masked_values, np.asarray([20, 30, 40]))
+    assert np.allclose(masked_wavs, [2,3,4])
+    assert np.allclose(masked_values, [20, 30, 40])
 
 def test_spectra_find_common_wavelengths_called_with_tuple():
-    one = (np.asarray([1,2,3,4,5]), np.asarray([10,20,30,40,50]))
-    two = (np.asarray([2,3,4]), np.asarray([2,3,4]))
+    one = ([1,2,3,4,5], [10,20,30,40,50])
+    two = ([2,3,4], [2,3,4])
     mask_wavs = sbc.spectra_find_common_wavelengths(one[0], two[0])
     mask_tuple = sbc.spectra_find_common_wavelengths(one, two)
 
