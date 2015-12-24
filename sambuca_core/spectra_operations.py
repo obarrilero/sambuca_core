@@ -26,13 +26,14 @@ def spectra_find_common_wavelengths(*args):
             input to spectra_apply_wavelength_mask.
     """
 
-    common = None
     if args:
         common = args[0]
         for a in args[1:]:
             common = np.intersect1d(common, a)
 
-    return common
+        return common
+    else:
+        raise ValueError('Invalid or insufficient arguments')
 
 
 def spectra_apply_wavelength_mask(spectra, mask):

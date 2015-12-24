@@ -20,8 +20,11 @@ def test_spectra_find_common_wavelengths_no_intersection_returns_empty_array():
     b = ([25,26,27], [6,13,9])
     c = ([26,27,28], [11,42,8])
     mask = sbc.spectra_find_common_wavelengths(a, b, c)
-    assert not mask
     assert len(mask) == 0
+
+def test_spectra_find_common_wavelengths_no_args():
+    with pytest.raises(ValueError):
+        sbc.spectra_find_common_wavelengths()
 
 def test_spectra_find_common_wavelengths_4_spectra():
     # build 4 fake spectra tuples (wavelengths, values)
