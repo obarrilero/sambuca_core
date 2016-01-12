@@ -27,7 +27,7 @@ if os.getenv('SPELLCHECK'):
 
 source_suffix = '.rst'
 master_doc = 'index'
-project = u'Sambuca'
+project = u'Sambuca Core'
 copyright = u'2014-15, CSIRO'
 version = release = '1.2.3'
 pygments_style = 'perldoc'
