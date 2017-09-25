@@ -17,3 +17,5 @@ __pycache__/
 # Temporary files
 *.xlsx#
 .cache/
+.settings/
+.pydevproject
